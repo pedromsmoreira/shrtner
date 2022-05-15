@@ -1,0 +1,58 @@
+version: "3.8"
+services:
+  shrtener:
+   image: shrtener:${RELEASE_VERSION}
+   build:
+     context: .
+     dockerfile: deploy/docker/Dockerfile
+     target: shrtener
+   ports:
+     - "8000:8000"
+   environment:
+     - 'DB_HOST=cockroachdb:26257'
+     - 'DB_NAME=shrtener'
+     - 'PORT=8000'
+
+  schema:
+    image: schema:${RELEASE_VERSION}
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile
+      target: schema
+    environment:
+      - 'SKIP_SCHEMA=false'
+      - 'DB_HOST=cockroachdb:26257'
+      - 'DB_NAME=shrtener'
+
+  cockroachdb:
+    image: cockroachdb/cockroach:v21.2.7
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+    command: "start-single-node --advertise-addr 'localhost' --insecure"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus:v2.24.0
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - '9090:9090'
+    restart: always
+
+volumes:
+  grafana-storage:
+  prometheus_data:
