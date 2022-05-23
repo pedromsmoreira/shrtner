@@ -12,13 +12,11 @@ ENV GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
 RUN go test -v ./...
 
-RUN go build -ldflags="-w -s" shrtener.go
-
-RUN ls -la
+RUN go build -ldflags="-w -s" -o build/shrtener ./cmd/shrtener/main.go
 
 FROM scratch as shrtener
 
-COPY --from=build /app/shrtener .
+COPY --from=build /app/build/shrtener .
 
 EXPOSE 8000
 
@@ -32,10 +30,10 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY /schema .
+COPY /cmd/schema .
 
 ENV GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64
-RUN go build -ldflags="-w -s" schema.go
+RUN go build -ldflags="-w -s" -o build/schema main.go
 
-CMD ["./schema"]
+CMD ["./build/schema"]
 
