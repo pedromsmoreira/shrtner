@@ -2,8 +2,11 @@ server:
   port: 8000
 
 database:
-  connection_string: localhost:26257
+  host: 'localhost:26257'
   db_name: shrtener
+  username: admin
+  password: admin
+  auth_enabled: false
 
 auth:
   enabled: true
