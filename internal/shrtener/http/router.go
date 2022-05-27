@@ -2,11 +2,13 @@ package http
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/rest"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 )
 
-func NewRouter(endpoints *rest.Handler) *httprouter.Router {
+func NewRouter(handlers *handlers.Handler) *httprouter.Router {
 	router := httprouter.New()
-	router.GET("/urls", endpoints.List)
+
+	router.GET("/urls", handlers.List)
+
 	return router
 }

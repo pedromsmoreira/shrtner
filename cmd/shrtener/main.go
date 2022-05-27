@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/http"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/rest"
 	"log"
 	"os"
 	"os/signal"
@@ -12,7 +12,7 @@ import (
 
 func main() {
 	settings := configuration.NewSettings()
-	handlers := &rest.Handler{}
+	handlers := &handlers.Handler{}
 	router := http.NewRouter(handlers)
 	s := http.NewServer(settings, router)
 	err := s.Start()
