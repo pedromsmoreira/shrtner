@@ -1,5 +1,6 @@
 server:
-  port: 8000
+  host: localhost
+  port: 5000
 
 database:
   host: 'localhost:26257'
