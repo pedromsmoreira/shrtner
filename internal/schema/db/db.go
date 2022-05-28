@@ -63,13 +63,11 @@ func CreateSchema(skipSchema bool, host string, dbName string) error {
 		log.Println("schema >>> creating urls table...")
 		_, err := tx.Exec(context.Background(), `
 						CREATE TABLE urls (
-							tenant STRING(36),
-							id STRING(36),
 							created_date TIMESTAMP,
-							modified_date TIMESTAMP,
+							expiration_date TIMESTAMP,
 							original_url STRING,
 							short_url STRING,
-							PRIMARY KEY (tenant, id)
+							PRIMARY KEY (short_url)
 						);`)
 		if err != nil {
 			return err

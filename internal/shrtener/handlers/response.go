@@ -5,15 +5,9 @@ type List struct {
 }
 
 type UrlMetadata struct {
-	Id           string   `json:"id"`
-	Type         string   `json:"type"`
-	Data         *UrlData `json:"data"`
-	DateCreated  string   `json:"date_created"`
-	DateModified string   `json:"date_modified"`
-	Version      int64    `json:"version"`
-}
-
-type UrlData struct {
-	Original string `json:"original"`
-	Short    string `json:"short"`
+	Original       string `json:"original"`
+	Short          string `json:"short"`
+	ExpirationDate string `json:"expiration_date"`
+	DateCreated    string `json:"date_created"`
+	DateModified   string `json:"date_modified"`
 }
