@@ -38,11 +38,11 @@ func newServerStage(t *testing.T) (*serverStage, *serverStage, *serverStage) {
 }
 
 func (s *serverStage) aListRequestIsPrepared() *serverStage {
-	// post request
+	// TODO: post request
 
 	r, err := http.NewRequest("GET", "/urls", nil)
-	require.Nil(s.T(), err)
-	require.NotNil(s.T(), r)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
 
 	s.request = r
 
@@ -51,8 +51,8 @@ func (s *serverStage) aListRequestIsPrepared() *serverStage {
 
 func (s *serverStage) listEndpointIsQueriedWithSuccess() *serverStage {
 	r, err := s.http.Do(s.request)
-	require.Nil(s.T(), err)
-	require.NotNil(s.T(), r)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
 
 	s.response = r
 
@@ -66,22 +66,22 @@ func (s *serverStage) listResponseShouldReturnStatusCode(statusCode int) *server
 
 func (s *serverStage) shouldBeEmptyList() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
-	require.Nil(s.T(), err)
+	require.Nil(s.t, err)
 
 	r := new(handlers.List)
 	err = json.Unmarshal(body, r)
-	require.Nil(s.T(), err)
-	require.Empty(s.T(), r.Data)
+	require.Nil(s.t, err)
+	require.Empty(s.t, r.Data)
 
 	return s
 }
 
 func (s *serverStage) shouldBeListWithItems() {
 	body, err := ioutil.ReadAll(s.response.Body)
-	require.Nil(s.T(), err)
+	require.Nil(s.t, err)
 
 	r := new(handlers.List)
 	err = json.Unmarshal(body, r)
-	require.Nil(s.T(), err)
-	require.Empty(s.T(), r.Data)
+	require.Nil(s.t, err)
+	require.Empty(s.t, r.Data)
 }

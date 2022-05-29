@@ -62,7 +62,7 @@ func CreateSchema(skipSchema bool, host string, dbName string) error {
 	err = crdbpgx.ExecuteTx(context.Background(), conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Println("schema >>> creating urls table...")
 		_, err := tx.Exec(context.Background(), `
-						CREATE TABLE urls (
+						CREATE TABLE IF NOT EXISTS urls (
 							created_date TIMESTAMP,
 							expiration_date TIMESTAMP,
 							original_url STRING,

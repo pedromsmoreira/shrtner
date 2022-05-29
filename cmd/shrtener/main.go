@@ -11,9 +11,12 @@ import (
 )
 
 func main() {
-	settings := configuration.NewSettings()
-	handlers := &handlers.Handler{}
-	router := http.NewRouter(handlers)
+	cfgFolder := "./internal/shrtener/configuration/"
+	settings := configuration.NewSettings(cfgFolder)
+
+	h := &handlers.Handler{}
+	router := http.NewRouter(h)
+
 	s := http.NewServer(settings, router)
 	err := s.Start()
 	if err != nil {

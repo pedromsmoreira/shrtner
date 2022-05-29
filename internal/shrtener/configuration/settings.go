@@ -21,17 +21,18 @@ type Auth struct {
 }
 
 type Database struct {
-	Host     string
-	Username string
-	Password string
-	DbName   string
-	Enabled  bool
+	Host       string
+	Username   string
+	Password   string
+	DbName     string
+	Enabled    bool
+	SkipSchema bool
 }
 
-func NewSettings() *Settings {
+func NewSettings(cfgFolder string) *Settings {
 	viper.SetConfigName("settings")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./internal/shrtener/configuration")
+	viper.AddConfigPath(cfgFolder)
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -40,17 +41,19 @@ func NewSettings() *Settings {
 
 	return &Settings{
 		Server: Server{
+			Host: viper.GetString("server.host"),
 			Port: viper.GetInt("server.port"),
 		},
 		Auth: Auth{
 			Enabled: viper.GetBool("auth.enabled"),
 		},
 		Database: Database{
-			Host:     viper.GetString("database.host"),
-			Username: viper.GetString("database.username"),
-			Password: viper.GetString("database.password"),
-			DbName:   viper.GetString("database.db_name"),
-			Enabled:  viper.GetBool("database.auth_enabled"),
+			Host:       viper.GetString("database.host"),
+			Username:   viper.GetString("database.username"),
+			Password:   viper.GetString("database.password"),
+			DbName:     viper.GetString("database.db_name"),
+			Enabled:    viper.GetBool("database.auth_enabled"),
+			SkipSchema: viper.GetBool("database.skip_schema"),
 		},
 	}
 }

@@ -8,6 +8,7 @@ database:
   username: admin
   password: admin
   auth_enabled: false
+  skip_schema: false
 
 auth:
   enabled: true
