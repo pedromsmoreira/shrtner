@@ -6,9 +6,9 @@ import (
 )
 
 type Settings struct {
-	Server   Server
-	Auth     Auth
-	Database Database
+	Server   *Server
+	Auth     *Auth
+	Database *Database
 }
 
 type Server struct {
@@ -40,14 +40,14 @@ func NewSettings(cfgFolder string) *Settings {
 	}
 
 	return &Settings{
-		Server: Server{
+		Server: &Server{
 			Host: viper.GetString("server.host"),
 			Port: viper.GetInt("server.port"),
 		},
-		Auth: Auth{
+		Auth: &Auth{
 			Enabled: viper.GetBool("auth.enabled"),
 		},
-		Database: Database{
+		Database: &Database{
 			Host:       viper.GetString("database.host"),
 			Username:   viper.GetString("database.username"),
 			Password:   viper.GetString("database.password"),

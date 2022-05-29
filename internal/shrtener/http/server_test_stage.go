@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
@@ -11,6 +12,8 @@ import (
 	"net/http"
 	"testing"
 )
+
+const applicatonJSONContentType string = "application/json"
 
 type serverStage struct {
 	suite.Suite
@@ -59,7 +62,7 @@ func (s *serverStage) listEndpointIsQueriedWithSuccess() *serverStage {
 	return s
 }
 
-func (s *serverStage) listResponseShouldReturnStatusCode(statusCode int) *serverStage {
+func (s *serverStage) responseShouldReturnStatusCode(statusCode int) *serverStage {
 	require.Equal(s.t, statusCode, s.response.StatusCode)
 	return s
 }
@@ -84,4 +87,64 @@ func (s *serverStage) shouldBeListWithItems() {
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.Empty(s.t, r.Data)
+}
+
+func (s *serverStage) aCreateRequestIsPrepared(url string) *serverStage {
+	bd := &handlers.UrlMetadata{
+		Original: url,
+	}
+	payload, err := json.Marshal(bd)
+	require.Nil(s.t, err)
+
+	r, err := http.NewRequest("POST", "/urls", bytes.NewBuffer(payload))
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	r.Header.Add("Content-Type", applicatonJSONContentType)
+
+	s.request = r
+
+	return s
+}
+
+func (s *serverStage) createEndpointIsCalledWithSuccess() *serverStage {
+	// TODO: extract Do(s.request) and asserts to a single method
+	r, err := s.http.Do(s.request)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.response = r
+
+	return s
+}
+
+func (s *serverStage) responseBodyShouldNotBeEmpty() *serverStage {
+	body, err := ioutil.ReadAll(s.response.Body)
+	require.Nil(s.t, err)
+
+	r := new(handlers.UrlMetadata)
+	err = json.Unmarshal(body, r)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+	require.NotNil(s.t, r.Short)
+	require.NotNil(s.t, r.Original)
+	require.NotNil(s.t, r.ExpirationDate)
+	require.NotNil(s.t, r.DateCreated)
+
+	return s
+}
+
+func (s *serverStage) responseBodyShouldReturnEmptyUrlError() *serverStage {
+	body, err := ioutil.ReadAll(s.response.Body)
+	require.Nil(s.t, err)
+
+	r := new(handlers.Error)
+	err = json.Unmarshal(body, r)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+	require.NotNil(s.t, r.Message)
+	require.NotNil(s.t, r.Details)
+	require.NotNil(s.t, r.Code)
+
+	return s
 }

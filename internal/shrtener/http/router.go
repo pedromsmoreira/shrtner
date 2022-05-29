@@ -5,7 +5,7 @@ import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 )
 
-func NewRouter(handlers *handlers.Handler) *httprouter.Router {
+func NewRouter(handlers *handlers.RestHandler) *httprouter.Router {
 	router := httprouter.New()
 
 	router.GET("/urls", handlers.List)

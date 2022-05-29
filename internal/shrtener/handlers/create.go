@@ -6,6 +6,6 @@ import (
 	"net/http"
 )
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h *RestHandler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "Create")
 }

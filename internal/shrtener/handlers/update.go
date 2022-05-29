@@ -6,6 +6,6 @@ import (
 	"net/http"
 )
 
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h *RestHandler) Update(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "Update")
 }

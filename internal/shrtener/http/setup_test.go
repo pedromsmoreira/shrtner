@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("error creating or updating the schema: %v", err)
 	}
-	h := &handlers.Handler{}
+	h := &handlers.RestHandler{}
 	router := NewRouter(h)
 
 	server := NewServer(cfg, router)
