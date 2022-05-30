@@ -2,10 +2,13 @@ package data
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/jackc/pgx/v4"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
+	"time"
 )
 
 type CockroachDbRepository struct {
@@ -32,6 +35,51 @@ func (r *CockroachDbRepository) Close(ctx context.Context) {
 	}
 }
 
-func (r *CockroachDbRepository) List() ([]*domain.Url, error) {
-	return make([]*domain.Url, 0), nil
+func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*domain.Url, error) {
+	err := crdbpgx.ExecuteTx(ctx, r.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx,
+			"INSERT INTO urls(short_url, original_url, created_date, expiration_date) VALUES ($1, $2, $3, $4)",
+			url.Short, url.Original, url.DateCreated, url.ExpirationDate)
+
+		return err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return url, nil
+}
+
+func (r *CockroachDbRepository) List(ctx context.Context) ([]*domain.Url, error) {
+	rows, err := r.db.Query(ctx, "SELECT short_url, original_url, created_date, expiration_date FROM urls")
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	urls := make([]*domain.Url, 0)
+	if !rows.Next() {
+		return urls, nil
+	}
+
+	for rows.Next() {
+		var sUrl, origUrl string
+		var expirationDate, createdDate time.Time
+
+		err := rows.Scan(&sUrl, &origUrl, createdDate, expirationDate)
+		if err != nil {
+			return nil, errors.New("error reading data from db")
+		}
+
+		urls = append(urls, &domain.Url{
+			Original:       sUrl,
+			Short:          origUrl,
+			ExpirationDate: expirationDate,
+			DateCreated:    createdDate,
+		})
+	}
+
+	return urls, nil
 }
