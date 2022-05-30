@@ -29,7 +29,19 @@ func NewUrl(original string, expirationDate string) (*Url, error) {
 	}
 
 	return &Url{
+		Original:       original,
 		DateCreated:    dc,
 		ExpirationDate: ts,
 	}, nil
+}
+
+func Shorten(u *Url) *Url {
+	// shorten
+	shortened := u.Original
+
+	// start converting
+
+	// assign
+	u.Short = shortened
+	return u
 }
