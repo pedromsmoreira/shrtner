@@ -1,11 +1,10 @@
 package handlers
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func (h *RestHandler) Update(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprint(w, "Update")
+func (h *RestHandler) Update(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "Update"})
 }

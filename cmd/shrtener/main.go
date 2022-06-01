@@ -23,14 +23,17 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close(context.Background())
-	
+
 	router := http.NewRouter(handlers.NewRestHandler(db))
 
 	s := http.NewServer(settings, router)
-	err = s.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	go func() {
+		err = s.Start()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	log.Println("Server is running! Ctrl-C to exit!")
 	quit := make(chan os.Signal, 1)

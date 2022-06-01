@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func (h *RestHandler) Redirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprint(w, "Redirect")
+func (h *RestHandler) Redirect(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{"message": "Redirect"})
 }

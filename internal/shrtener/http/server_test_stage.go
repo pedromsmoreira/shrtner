@@ -22,6 +22,7 @@ type serverStage struct {
 	http     *http.Client
 	request  *http.Request
 	response *http.Response
+	body     *handlers.UrlMetadata
 }
 
 func (s *serverStage) and() *serverStage {
@@ -43,7 +44,7 @@ func newServerStage(t *testing.T) (*serverStage, *serverStage, *serverStage) {
 func (s *serverStage) aListRequestIsPrepared() *serverStage {
 	// TODO: post request
 
-	r, err := http.NewRequest("GET", "/urls", nil)
+	r, err := http.NewRequest("GET", fmt.Sprintf("%s/urls", s.host), nil)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
 
@@ -90,26 +91,18 @@ func (s *serverStage) shouldBeListWithItems() {
 }
 
 func (s *serverStage) aCreateRequestIsPrepared(url string) *serverStage {
-	bd := &handlers.UrlMetadata{
+	s.body = &handlers.UrlMetadata{
 		Original: url,
 	}
-	payload, err := json.Marshal(bd)
-	require.Nil(s.t, err)
-
-	r, err := http.NewRequest("POST", "/urls", bytes.NewBuffer(payload))
-	require.Nil(s.t, err)
-	require.NotNil(s.t, r)
-
-	r.Header.Add("Content-Type", applicatonJSONContentType)
-
-	s.request = r
 
 	return s
 }
 
 func (s *serverStage) createEndpointIsCalledWithSuccess() *serverStage {
 	// TODO: extract Do(s.request) and asserts to a single method
-	r, err := s.http.Do(s.request)
+	payload, err := json.Marshal(s.body)
+	require.Nil(s.t, err)
+	r, err := s.http.Post(fmt.Sprintf("%s/urls", s.host), applicatonJSONContentType, bytes.NewBuffer(payload))
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
 

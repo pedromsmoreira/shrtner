@@ -3,15 +3,13 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
 	"net/http"
 )
 
-func (h *RestHandler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	w.Header().Set("Content-Type", "application/json")
-
-	decoder := json.NewDecoder(r.Body)
+func (h *RestHandler) Create(c *gin.Context) {
+	decoder := json.NewDecoder(c.Request.Body)
 	var body UrlMetadata
 	err := decoder.Decode(&body)
 
@@ -19,31 +17,26 @@ func (h *RestHandler) Create(w http.ResponseWriter, r *http.Request, _ httproute
 		// TODO: Add custom error to have less loc
 		resp := &Error{
 			Code:    "1000001",
-			Message: "Error decoding body",
+			Message: "could not decode the request body",
 			Details: map[string]interface{}{
-				"request": r.Body,
+				"request": c.Request.Body,
+				"error":   err,
 			},
 		}
 
-		w.WriteHeader(http.StatusBadRequest)
-		err := json.NewEncoder(w).Encode(resp)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	u, err := domain.NewUrl(body.Original, body.ExpirationDate)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	u = domain.Shorten(u)
-
 	cUrl, err := h.repository.Create(context.Background(), u)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -54,6 +47,5 @@ func (h *RestHandler) Create(w http.ResponseWriter, r *http.Request, _ httproute
 		DateCreated:    cUrl.DateCreated.String(),
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(rBody)
+	c.JSON(http.StatusCreated, rBody)
 }

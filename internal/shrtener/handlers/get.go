@@ -1,11 +1,13 @@
 package handlers
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func (h *RestHandler) Get(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprint(w, "Get")
+func (h *RestHandler) Get(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Get",
+	})
 }

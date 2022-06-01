@@ -2,20 +2,20 @@ package http
 
 import (
 	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"log"
 	"net/http"
 	"sync"
 )
 
 type server struct {
 	settings *configuration.Settings
-	router   *httprouter.Router
+	router   *gin.Engine
+	server   *http.Server
 	wg       sync.WaitGroup
 }
 
-func NewServer(settings *configuration.Settings, router *httprouter.Router) *server {
+func NewServer(settings *configuration.Settings, router *gin.Engine) *server {
 	return &server{
 		settings: settings,
 		router:   router,
@@ -23,16 +23,18 @@ func NewServer(settings *configuration.Settings, router *httprouter.Router) *ser
 }
 
 func (s *server) Start() error {
-	s.wg.Add(1)
-	go func(settings *configuration.Settings, r *httprouter.Router) {
-		defer s.wg.Done()
-		err := http.ListenAndServe(fmt.Sprintf(":%d", settings.Server.Port), r)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(s.settings, s.router)
+	err := s.router.SetTrustedProxies(nil)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
-	return nil
+	s.server = &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", s.settings.Server.Host, s.settings.Server.Port),
+		Handler: s.router,
+	}
+
+	return s.server.ListenAndServe()
 }
 
 func (s *server) Shutdown() error {

@@ -5,7 +5,6 @@ import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 	"log"
-	"net/http"
 	"os"
 	"testing"
 )
@@ -22,9 +21,14 @@ func TestMain(m *testing.M) {
 	router := NewRouter(h)
 
 	server := NewServer(cfg, router)
-	if err := server.Start(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("listen: %s\n", err)
-	}
+	server.wg.Add(1)
+	go func() {
+		defer server.wg.Done()
+		err := server.Start()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	code := m.Run()
 

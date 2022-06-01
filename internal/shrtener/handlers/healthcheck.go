@@ -1,11 +1,18 @@
 package handlers
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func (h *RestHandler) Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprint(w, "Status")
+func Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "pong",
+	})
+}
+
+func Status(c *gin.Context) {
+	// add controls for DB status
+	// status to have: up, unstable, down
+	c.JSON(http.StatusOK, gin.H{"status": "up"})
 }
