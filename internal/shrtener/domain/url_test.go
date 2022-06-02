@@ -33,7 +33,7 @@ func TestShorten(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("when is %d should return %s", tc.decimalValue, tc.shorUrl), func(t *testing.T) {
-			s := decimalToBas62(tc.decimalValue)
+			s := decimalToBase62(tc.decimalValue)
 			require.Equal(t, tc.shorUrl, s)
 		})
 	}

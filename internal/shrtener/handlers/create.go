@@ -3,8 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
+	"github.com/spf13/viper"
 	"net/http"
 )
 
@@ -41,8 +43,12 @@ func (h *RestHandler) Create(c *gin.Context) {
 	}
 
 	rBody := &UrlMetadata{
-		Original:       cUrl.Original,
-		Short:          cUrl.Short,
+		Original: cUrl.Original,
+		Short: fmt.Sprintf(
+			"http://%s:%d/%s",
+			viper.GetString("server.host"),
+			viper.GetInt("server.port"),
+			cUrl.Short),
 		ExpirationDate: cUrl.ExpirationDate.String(),
 		DateCreated:    cUrl.DateCreated.String(),
 	}

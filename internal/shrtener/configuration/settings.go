@@ -3,6 +3,7 @@ package configuration
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"os"
 )
 
 type Settings struct {
@@ -48,12 +49,24 @@ func NewSettings(cfgFolder string) *Settings {
 			Enabled: viper.GetBool("auth.enabled"),
 		},
 		Database: &Database{
-			Host:       viper.GetString("database.host"),
-			Username:   viper.GetString("database.username"),
-			Password:   viper.GetString("database.password"),
-			DbName:     viper.GetString("database.db_name"),
+			Host:       getStringOrDefault("database.host"),
+			Username:   getStringOrDefault("database.username"),
+			Password:   getStringOrDefault("database.password"),
+			DbName:     getStringOrDefault("database.db_name"),
 			Enabled:    viper.GetBool("database.auth_enabled"),
 			SkipSchema: viper.GetBool("database.skip_schema"),
 		},
 	}
+}
+
+func getStringOrDefault(name string) string {
+	s := viper.GetString(name)
+	if s == "" {
+		s = os.Getenv(name)
+		if s == "" {
+			panic(fmt.Sprintf("variable %s not set. add variable to environment variables or settings file.", name))
+		}
+	}
+
+	return s
 }

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
@@ -30,7 +31,7 @@ func (s *server) Start() error {
 	}
 
 	s.server = &http.Server{
-		Addr:    fmt.Sprintf("%s:%s", s.settings.Server.Host, s.settings.Server.Port),
+		Addr:    fmt.Sprintf("%s:%d", s.settings.Server.Host, s.settings.Server.Port),
 		Handler: s.router,
 	}
 
@@ -39,5 +40,5 @@ func (s *server) Start() error {
 
 func (s *server) Shutdown() error {
 	s.wg.Wait()
-	return nil
+	return s.server.Shutdown(context.Background())
 }
