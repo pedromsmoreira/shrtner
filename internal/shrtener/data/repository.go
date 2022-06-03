@@ -15,7 +15,7 @@ type CockroachDbRepository struct {
 }
 
 func NewCockroachDbRepository(dbCfg *configuration.Database) (*CockroachDbRepository, error) {
-	connStr := fmt.Sprintf("postgresql://root@%s/%s?sslmode=disable", dbCfg.Host, dbCfg.DbName)
+	connStr := fmt.Sprintf("postgresql://%s@%s/%s?sslmode=disable", dbCfg.Username, dbCfg.Host, dbCfg.DbName)
 	config, err := pgx.ParseConfig(connStr)
 	conn, err := pgx.ConnectConfig(context.Background(), config)
 	if err != nil {
