@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-const applicatonJSONContentType string = "application/json"
+const applicationJSONContentType string = "application/json"
 
 type serverStage struct {
 	suite.Suite
@@ -102,7 +102,7 @@ func (s *serverStage) createEndpointIsCalledWithSuccess() *serverStage {
 	// TODO: extract Do(s.request) and asserts to a single method
 	payload, err := json.Marshal(s.body)
 	require.Nil(s.t, err)
-	r, err := s.http.Post(fmt.Sprintf("%s/urls", s.host), applicatonJSONContentType, bytes.NewBuffer(payload))
+	r, err := s.http.Post(fmt.Sprintf("%s/urls", s.host), applicationJSONContentType, bytes.NewBuffer(payload))
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
 
@@ -131,7 +131,7 @@ func (s *serverStage) responseBodyShouldReturnEmptyUrlError() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
-	r := new(handlers.Error)
+	r := new(handlers.HttpError)
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
@@ -140,4 +140,8 @@ func (s *serverStage) responseBodyShouldReturnEmptyUrlError() *serverStage {
 	require.NotNil(s.t, r.Code)
 
 	return s
+}
+
+func (s *serverStage) dbIsEmpty() {
+
 }

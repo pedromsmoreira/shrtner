@@ -15,18 +15,26 @@ func (h *RestHandler) Create(c *gin.Context) {
 	var body UrlMetadata
 	err := decoder.Decode(&body)
 
-	if err != nil {
-		// TODO: Add custom error to have less loc
-		resp := &Error{
-			Code:    "1000001",
-			Message: "could not decode the request body",
-			Details: map[string]interface{}{
-				"request": c.Request.Body,
-				"error":   err,
-			},
-		}
+	he := validateInput(body.Original == "",
+		"1000001",
+		"could not decode the request body",
+		map[string]interface{}{
+			"request": json.Marshal(body),
+			"error":   err,
+		})
+	if he != nil {
+		c.JSON(http.StatusBadRequest, he)
+		return
+	}
 
-		c.JSON(http.StatusBadRequest, resp)
+	he = validateInput(body.Original == "",
+		"1000002",
+		"'original' property should not be empty",
+		map[string]interface{}{
+			"request": json.Marshal(body),
+		})
+	if he != nil {
+		c.JSON(http.StatusBadRequest, he)
 		return
 	}
 
@@ -38,7 +46,11 @@ func (h *RestHandler) Create(c *gin.Context) {
 
 	cUrl, err := h.repository.Create(context.Background(), u)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		herr := &HttpError{
+			Code:    "1000003",
+			Message: err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, herr)
 		return
 	}
 

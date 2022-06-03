@@ -13,8 +13,9 @@ type Settings struct {
 }
 
 type Server struct {
-	Host string
-	Port int
+	Host     string
+	Port     int
+	Protocol string
 }
 
 type Auth struct {
@@ -42,8 +43,9 @@ func NewSettings(cfgFolder string) *Settings {
 
 	return &Settings{
 		Server: &Server{
-			Host: viper.GetString("server.host"),
-			Port: viper.GetInt("server.port"),
+			Host:     viper.GetString("server.host"),
+			Port:     viper.GetInt("server.port"),
+			Protocol: viper.GetString("server.protocol"),
 		},
 		Auth: &Auth{
 			Enabled: viper.GetBool("auth.enabled"),

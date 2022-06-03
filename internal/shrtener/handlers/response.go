@@ -11,8 +11,20 @@ type UrlMetadata struct {
 	DateCreated    string `json:"date_created,omitempty"`
 }
 
-type Error struct {
+type HttpError struct {
 	Code    string      `json:"code"`
 	Message string      `json:"message"`
 	Details interface{} `json:"details,omitempty"`
+}
+
+func validateInput(condition bool, code string, msg string, details map[string]interface{}) *HttpError {
+	if condition {
+		return &HttpError{
+			Code:    code,
+			Message: msg,
+			Details: details,
+		}
+	}
+
+	return nil
 }

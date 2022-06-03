@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/jackc/pgx/v4"
@@ -45,7 +44,8 @@ func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*d
 	})
 
 	if err != nil {
-		return nil, err
+		// TODO: add custom error
+		return nil, NewErrPerformingOperationInDb("error creating data in db", err)
 	}
 
 	return url, nil
@@ -70,7 +70,8 @@ func (r *CockroachDbRepository) List(ctx context.Context) ([]*domain.Url, error)
 
 		err := rows.Scan(&sUrl, &origUrl, createdDate, expirationDate)
 		if err != nil {
-			return nil, errors.New("error reading data from db")
+			// TODO: add custom error
+			return nil, NewErrPerformingOperationInDb("error reading data from db", err)
 		}
 
 		urls = append(urls, &domain.Url{
