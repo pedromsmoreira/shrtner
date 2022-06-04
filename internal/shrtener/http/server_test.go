@@ -1,6 +1,8 @@
 package http
 
 import (
+	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"testing"
 )
@@ -39,7 +41,7 @@ func TestCreate(t *testing.T) {
 	t.Run("when request has success returns created item", func(t *testing.T) {
 		given, when, then := newServerStage(t)
 
-		given.aCreateRequestIsPrepared("https://stackoverflow.com/")
+		given.aCreateRequestIsPrepared(fmt.Sprintf("https://%s.com/", uuid.New().String()))
 
 		when.createEndpointIsCalledWithSuccess()
 
@@ -60,5 +62,16 @@ func TestCreate(t *testing.T) {
 			responseShouldReturnStatusCode(http.StatusBadRequest).
 			and().
 			responseBodyShouldReturnEmptyUrlError()
+	})
+
+	t.Run("when an existing url did not expire and is shortened again, should return conflict", func(t *testing.T) {
+		given, when, then := newServerStage(t)
+
+		given.twoRequestsWithSameUrlAreCreated()
+
+		when.createEndpointIsCalledWithRequestsWithSameUrl()
+
+		then.
+			responseShouldReturnStatusCode(http.StatusConflict)
 	})
 }

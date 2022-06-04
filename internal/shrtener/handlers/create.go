@@ -54,7 +54,7 @@ func (h *RestHandler) Create(c *gin.Context) {
 			Code:    "1000003",
 			Message: err.Error(),
 		}
-		c.JSON(http.StatusInternalServerError, herr)
+		c.JSON(http.StatusConflict, herr)
 		return
 	}
 

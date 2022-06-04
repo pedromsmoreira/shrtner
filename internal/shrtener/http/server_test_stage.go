@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -23,6 +24,7 @@ type serverStage struct {
 	request  *http.Request
 	response *http.Response
 	body     *handlers.UrlMetadata
+	requests []*handlers.UrlMetadata
 }
 
 func (s *serverStage) and() *serverStage {
@@ -87,7 +89,7 @@ func (s *serverStage) shouldBeListWithItems() *serverStage {
 	r := new(handlers.List)
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
-	require.Empty(s.t, r.Data)
+	require.NotEmpty(s.t, r.Data)
 
 	return s
 }
@@ -146,4 +148,36 @@ func (s *serverStage) responseBodyShouldReturnEmptyUrlError() *serverStage {
 
 func (s *serverStage) dbIsEmpty() {
 
+}
+
+func (s *serverStage) twoRequestsWithSameUrlAreCreated() *serverStage {
+	url := uuid.New().String()
+	md := &handlers.UrlMetadata{
+		Original: url,
+	}
+
+	s.requests = append(s.requests, md)
+	s.requests = append(s.requests, md)
+
+	return s
+}
+
+func (s *serverStage) createEndpointIsCalledWithRequestsWithSameUrl() *serverStage {
+	// TODO: extract Do(s.request) and asserts to a single method
+	first, err := json.Marshal(s.requests[0])
+	require.Nil(s.t, err)
+	r, err := s.http.Post(fmt.Sprintf("%s/urls", s.host), applicationJSONContentType, bytes.NewBuffer(first))
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+	require.Equal(s.t, http.StatusCreated, r.StatusCode)
+
+	second, err := json.Marshal(s.requests[1])
+	require.Nil(s.t, err)
+	r2, err := s.http.Post(fmt.Sprintf("%s/urls", s.host), applicationJSONContentType, bytes.NewBuffer(second))
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.response = r2
+
+	return s
 }
