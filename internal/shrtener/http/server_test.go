@@ -75,3 +75,30 @@ func TestCreate(t *testing.T) {
 			responseShouldReturnStatusCode(http.StatusConflict)
 	})
 }
+
+func TestRedirect(t *testing.T) {
+	t.Run("when shortened google url is requested should return temporary redirect (Status Code 307) ", func(t *testing.T) {
+		given, when, then := newServerStage(t)
+
+		given.aUrlIsShortened("https://www.google.com").
+			and().
+			aRedirectRequestIsCreated()
+
+		when.redirectIsRequested()
+
+		then.
+			responseShouldReturnStatusCode(http.StatusTemporaryRedirect)
+	})
+
+	t.Run("when shortened urls does not exist should return 404 Not Found", func(t *testing.T) {
+		given, when, then := newServerStage(t)
+
+		given.aRedirectRequestIsCreatedWithRandomUrl()
+
+		when.aNonShortenedUrlIsRequested()
+
+		then.
+			responseShouldReturnStatusCode(http.StatusNotFound).and().
+			shouldHaveNotFoundErrorMessage()
+	})
+}

@@ -25,6 +25,7 @@ type serverStage struct {
 	response *http.Response
 	body     *handlers.UrlMetadata
 	requests []*handlers.UrlMetadata
+	sUrl     string
 }
 
 func (s *serverStage) and() *serverStage {
@@ -178,6 +179,77 @@ func (s *serverStage) createEndpointIsCalledWithRequestsWithSameUrl() *serverSta
 	require.NotNil(s.t, r)
 
 	s.response = r2
+
+	return s
+}
+
+func (s *serverStage) aUrlIsShortened(url string) *serverStage {
+	s.aCreateRequestIsPrepared(url).
+		and().
+		createEndpointIsCalledWithSuccess()
+
+	body, err := ioutil.ReadAll(s.response.Body)
+	require.Nil(s.t, err)
+
+	resp := &handlers.UrlMetadata{}
+	err = json.Unmarshal(body, resp)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, resp)
+
+	s.sUrl = resp.Short
+
+	return s
+}
+
+func (s *serverStage) aRedirectRequestIsCreated() *serverStage {
+
+	r, err := http.NewRequest("GET", s.sUrl, nil)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.request = r
+
+	return s
+}
+
+func (s *serverStage) redirectIsRequested() *serverStage {
+	r, err := s.http.Do(s.request)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.response = r
+
+	return s
+}
+
+func (s *serverStage) aRedirectRequestIsCreatedWithRandomUrl() *serverStage {
+	r, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", s.host, uuid.New().String()), nil)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.request = r
+
+	return s
+}
+
+func (s *serverStage) aNonShortenedUrlIsRequested() *serverStage {
+	r, err := s.http.Do(s.request)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.response = r
+
+	return s
+}
+
+func (s *serverStage) shouldHaveNotFoundErrorMessage() *serverStage {
+	body, err := ioutil.ReadAll(s.response.Body)
+	require.Nil(s.t, err)
+
+	resp := &handlers.HttpError{}
+	err = json.Unmarshal(body, resp)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, resp)
 
 	return s
 }
