@@ -38,7 +38,6 @@ func (s *server) Start() error {
 	return s.server.ListenAndServe()
 }
 
-func (s *server) Shutdown() error {
-	s.wg.Wait()
-	return s.server.Shutdown(context.Background())
+func (s *server) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }

@@ -43,6 +43,7 @@ func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*d
 		return err
 	})
 
+	// TODO: Apply check according to db error
 	if err != nil {
 		// TODO: add custom error
 		return nil, NewErrPerformingOperationInDb("error creating data in db", err)

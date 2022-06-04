@@ -80,7 +80,7 @@ func (s *serverStage) shouldBeEmptyList() *serverStage {
 	return s
 }
 
-func (s *serverStage) shouldBeListWithItems() {
+func (s *serverStage) shouldBeListWithItems() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
@@ -88,6 +88,8 @@ func (s *serverStage) shouldBeListWithItems() {
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.Empty(s.t, r.Data)
+
+	return s
 }
 
 func (s *serverStage) aCreateRequestIsPrepared(url string) *serverStage {

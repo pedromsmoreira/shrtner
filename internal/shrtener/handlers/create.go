@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
 	"github.com/spf13/viper"
 	"net/http"
@@ -15,11 +16,13 @@ func (h *RestHandler) Create(c *gin.Context) {
 	var body UrlMetadata
 	err := decoder.Decode(&body)
 
+	b, _ := json.Marshal(&body)
+
 	he := validateInput(body.Original == "",
 		"1000001",
 		"could not decode the request body",
 		map[string]interface{}{
-			"request": json.Marshal(body),
+			"request": string(b),
 			"error":   err,
 		})
 	if he != nil {
@@ -31,7 +34,7 @@ func (h *RestHandler) Create(c *gin.Context) {
 		"1000002",
 		"'original' property should not be empty",
 		map[string]interface{}{
-			"request": json.Marshal(body),
+			"request": render.JSON{Data: body},
 		})
 	if he != nil {
 		c.JSON(http.StatusBadRequest, he)
@@ -44,6 +47,7 @@ func (h *RestHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// TODO: move to service
 	cUrl, err := h.repository.Create(context.Background(), u)
 	if err != nil {
 		herr := &HttpError{

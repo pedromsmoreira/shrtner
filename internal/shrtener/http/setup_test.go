@@ -1,12 +1,17 @@
 package http
 
 import (
+	"context"
+	"fmt"
 	"github.com/pedromsmoreira/shrtener/internal/schema/db"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 	"log"
+	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -17,22 +22,29 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("error creating or updating the schema: %v", err)
 	}
-	h := &handlers.RestHandler{}
-	router := NewRouter(h)
+
+	cr, err := data.NewCockroachDbRepository(cfg.Database)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		os.Exit(1)
+	}
+	defer cr.Close(context.Background())
+
+	router := NewRouter(handlers.NewRestHandler(cr))
 
 	server := NewServer(cfg, router)
-	server.wg.Add(1)
 	go func() {
-		defer server.wg.Done()
 		err := server.Start()
-		if err != nil {
+		if err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
 	}()
 
 	code := m.Run()
 
-	if err := server.Shutdown(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
