@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
-	"time"
 )
 
 type CockroachDbRepository struct {
@@ -66,18 +65,16 @@ func (r *CockroachDbRepository) List(ctx context.Context) ([]*domain.Url, error)
 	}
 
 	for rows.Next() {
-		var sUrl, origUrl string
-		var expirationDate, createdDate time.Time
+		var sUrl, origUrl, expirationDate, createdDate string
 
-		err := rows.Scan(&sUrl, &origUrl, createdDate, expirationDate)
+		err := rows.Scan(&sUrl, &origUrl, &createdDate, &expirationDate)
 		if err != nil {
-			// TODO: add custom error
 			return nil, NewErrPerformingOperationInDb("error reading data from db", err)
 		}
 
 		urls = append(urls, &domain.Url{
-			Original:       sUrl,
-			Short:          origUrl,
+			Original:       origUrl,
+			Short:          sUrl,
 			ExpirationDate: expirationDate,
 			DateCreated:    createdDate,
 		})

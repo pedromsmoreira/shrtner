@@ -1,9 +1,5 @@
 package handlers
 
-type List struct {
-	Data []*UrlMetadata `json:"data"`
-}
-
 type UrlMetadata struct {
 	Original       string `json:"original"`
 	Short          string `json:"short,omitempty"`

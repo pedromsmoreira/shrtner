@@ -9,7 +9,7 @@ database:
   username: root
   password: admin
   auth_enabled: false
-  skip_schema: true
+  skip_schema: false
 
 auth:
-  enabled: true
+  enabled: false

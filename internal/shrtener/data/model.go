@@ -2,14 +2,13 @@ package data
 
 import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
-	"time"
 )
 
 type urlData struct {
 	Original       string
 	Short          string
-	ExpirationDate time.Time
-	DateCreated    time.Time
+	ExpirationDate string
+	DateCreated    string
 }
 
 func ToDataModel(m *domain.Url) *urlData {

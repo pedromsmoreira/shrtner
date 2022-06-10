@@ -45,8 +45,6 @@ func newServerStage(t *testing.T) (*serverStage, *serverStage, *serverStage) {
 }
 
 func (s *serverStage) aListRequestIsPrepared() *serverStage {
-	// TODO: post request
-
 	r, err := http.NewRequest("GET", fmt.Sprintf("%s/urls", s.host), nil)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
@@ -103,7 +101,7 @@ func (s *serverStage) aCreateRequestIsPrepared(url string) *serverStage {
 	return s
 }
 
-func (s *serverStage) createEndpointIsCalledWithSuccess() *serverStage {
+func (s *serverStage) createEndpointIsCalled() *serverStage {
 	// TODO: extract Do(s.request) and asserts to a single method
 	payload, err := json.Marshal(s.body)
 	require.Nil(s.t, err)
@@ -125,7 +123,9 @@ func (s *serverStage) responseBodyShouldNotBeEmpty() *serverStage {
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
 	require.NotNil(s.t, r.Short)
+	require.NotEqual(s.t, s.body.Original, r.Short)
 	require.NotNil(s.t, r.Original)
+	require.Equal(s.t, s.body.Original, r.Original)
 	require.NotNil(s.t, r.ExpirationDate)
 	require.NotNil(s.t, r.DateCreated)
 
@@ -186,7 +186,7 @@ func (s *serverStage) createEndpointIsCalledWithRequestsWithSameUrl() *serverSta
 func (s *serverStage) aUrlIsShortened(url string) *serverStage {
 	s.aCreateRequestIsPrepared(url).
 		and().
-		createEndpointIsCalledWithSuccess()
+		createEndpointIsCalled()
 
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)

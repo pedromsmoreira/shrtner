@@ -26,7 +26,9 @@ func TestList(t *testing.T) {
 	t.Run("when request has success returns list with items", func(t *testing.T) {
 		given, when, then := newServerStage(t)
 
-		given.aListRequestIsPrepared()
+		given.aCreateRequestIsPrepared(fmt.Sprintf("https://%s.com", uuid.NewString())).and().
+			createEndpointIsCalled().and().
+			aListRequestIsPrepared()
 
 		when.listEndpointIsQueriedWithSuccess()
 
@@ -43,7 +45,7 @@ func TestCreate(t *testing.T) {
 
 		given.aCreateRequestIsPrepared(fmt.Sprintf("https://%s.com/", uuid.New().String()))
 
-		when.createEndpointIsCalledWithSuccess()
+		when.createEndpointIsCalled()
 
 		then.
 			responseShouldReturnStatusCode(http.StatusCreated).
@@ -56,7 +58,7 @@ func TestCreate(t *testing.T) {
 
 		given.aCreateRequestIsPrepared("")
 
-		when.createEndpointIsCalledWithSuccess()
+		when.createEndpointIsCalled()
 
 		then.
 			responseShouldReturnStatusCode(http.StatusBadRequest).

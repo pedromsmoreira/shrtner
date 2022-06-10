@@ -61,12 +61,13 @@ func (h *RestHandler) Create(c *gin.Context) {
 	rBody := &UrlMetadata{
 		Original: cUrl.Original,
 		Short: fmt.Sprintf(
-			"http://%s:%d/%s",
+			"%s://%s:%d/%s",
+			viper.GetString("server.protocol"),
 			viper.GetString("server.host"),
 			viper.GetInt("server.port"),
 			cUrl.Short),
-		ExpirationDate: cUrl.ExpirationDate.String(),
-		DateCreated:    cUrl.DateCreated.String(),
+		ExpirationDate: cUrl.ExpirationDate,
+		DateCreated:    cUrl.DateCreated,
 	}
 
 	c.JSON(http.StatusCreated, rBody)

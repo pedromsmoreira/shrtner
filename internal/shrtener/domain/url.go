@@ -13,6 +13,7 @@ const defaultUrlActiveTimeInHours = time.Hour * 24
 
 var (
 	ErrConvertingExpirationDateToRFC3339 = errors.New("could not convert expiration date to RFC3339")
+	ErrConvertingCreatedDateToRFC3339    = errors.New("could not convert created date to RFC3339")
 
 	alphabet = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
 		"o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
@@ -23,8 +24,8 @@ var (
 type Url struct {
 	Original       string
 	Short          string
-	ExpirationDate time.Time
-	DateCreated    time.Time
+	ExpirationDate string
+	DateCreated    string
 }
 
 func NewUrl(original string, expirationDate string) (*Url, error) {
@@ -42,11 +43,16 @@ func NewUrl(original string, expirationDate string) (*Url, error) {
 		expDate = d
 	}
 
+	_, err := time.Parse(time.RFC3339Nano, createdDate.Format(time.RFC3339Nano))
+	if err != nil {
+		return nil, ErrConvertingCreatedDateToRFC3339
+	}
+
 	return &Url{
 		Original:       original,
 		Short:          Shorten(original),
-		DateCreated:    createdDate,
-		ExpirationDate: expDate,
+		DateCreated:    createdDate.Format(time.RFC3339Nano),
+		ExpirationDate: expDate.Format(time.RFC3339Nano),
 	}, nil
 }
 
@@ -63,7 +69,7 @@ func decimalToBase62(strDecimal int64) string {
 	for strDecimal > 0 {
 		r := strDecimal % base
 		strDecimal /= base
-		encoded = fmt.Sprintf("%s%s", string(alphabet[r]), encoded)
+		encoded = fmt.Sprintf("%s%s", alphabet[r], encoded)
 	}
 
 	return encoded
