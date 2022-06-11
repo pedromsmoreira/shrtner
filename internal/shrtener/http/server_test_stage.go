@@ -73,7 +73,7 @@ func (s *serverStage) shouldBeEmptyList() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
-	r := new(handlers.List)
+	r := new(handlers.ListResponse)
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.Empty(s.t, r.Data)
@@ -85,7 +85,7 @@ func (s *serverStage) shouldBeListWithItems() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
-	r := new(handlers.List)
+	r := new(handlers.ListResponse)
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.NotEmpty(s.t, r.Data)

@@ -6,7 +6,6 @@ import (
 	"github.com/pedromsmoreira/shrtener/internal/schema/db"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 	"log"
 	"net/http"
 	"os"
@@ -23,14 +22,14 @@ func TestMain(m *testing.M) {
 		log.Fatalf("error creating or updating the schema: %v", err)
 	}
 
-	cr, err := data.NewCockroachDbRepository(cfg.Database)
+	crDb, err := data.NewCockroachDbRepository(cfg.Database)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		os.Exit(1)
 	}
-	defer cr.Close(context.Background())
+	defer crDb.Close(context.Background())
 
-	router := NewRouter(handlers.NewRestHandler(cr))
+	router := NewRouter(crDb)
 
 	server := NewServer(cfg, router)
 	go func() {

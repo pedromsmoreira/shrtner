@@ -5,7 +5,8 @@ import (
 	"net/http"
 )
 
-func (h *RestHandler) Redirect(c *gin.Context) {
-
-	c.JSON(http.StatusOK, gin.H{"message": "Redirect"})
+func Redirect() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Redirect"})
+	}
 }

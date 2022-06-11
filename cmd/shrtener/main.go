@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/http"
 	"log"
 	"os"
@@ -18,14 +17,14 @@ func main() {
 	cfgFolder := "./internal/shrtener/configuration/"
 	settings := configuration.NewSettings(cfgFolder)
 
-	db, err := data.NewCockroachDbRepository(settings.Database)
+	crDB, err := data.NewCockroachDbRepository(settings.Database)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		os.Exit(1)
 	}
-	defer db.Close(context.Background())
+	defer crDB.Close(context.Background())
 
-	router := http.NewRouter(handlers.NewRestHandler(db))
+	router := http.NewRouter(crDB)
 
 	s := http.NewServer(settings, router)
 
