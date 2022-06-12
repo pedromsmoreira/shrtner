@@ -8,11 +8,10 @@ import (
 	"github.com/gin-gonic/gin/render"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
-	"github.com/spf13/viper"
 	"net/http"
 )
 
-func Create(repository data.Create) func(c *gin.Context) {
+func Create(dns string, repository data.Create) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		decoder := json.NewDecoder(c.Request.Body)
 		var body UrlMetadata
@@ -20,26 +19,20 @@ func Create(repository data.Create) func(c *gin.Context) {
 
 		b, _ := json.Marshal(&body)
 
-		he := validateInput(body.Original == "",
-			"1000001",
-			"could not decode the request body",
-			map[string]interface{}{
-				"request": string(b),
-				"error":   err,
-			})
-		if he != nil {
-			c.JSON(http.StatusBadRequest, he)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, NewBadRequestError("could not decode the request body",
+				map[string]interface{}{
+					"request": string(b),
+					"error":   err,
+				}))
 			return
 		}
 
-		he = validateInput(body.Original == "",
-			"1000002",
-			"'original' property should not be empty",
-			map[string]interface{}{
-				"request": render.JSON{Data: body},
-			})
-		if he != nil {
-			c.JSON(http.StatusBadRequest, he)
+		if body.Original == "" {
+			c.JSON(http.StatusBadRequest, NewBadRequestError("[original] property should not be empty",
+				map[string]interface{}{
+					"request": render.JSON{Data: body},
+				}))
 			return
 		}
 
@@ -52,22 +45,13 @@ func Create(repository data.Create) func(c *gin.Context) {
 		cUrl, err := repository.Create(context.Background(), u)
 		// TODO: use custom error
 		if err != nil {
-			herr := &HttpError{
-				Code:    "1000003",
-				Message: err.Error(),
-			}
-			c.JSON(http.StatusConflict, herr)
+			c.JSON(http.StatusConflict, NewConflictError(err.Error()))
 			return
 		}
 
 		rBody := &UrlMetadata{
-			Original: cUrl.Original,
-			Short: fmt.Sprintf(
-				"%s://%s:%d/%s",
-				viper.GetString("server.protocol"),
-				viper.GetString("server.host"),
-				viper.GetInt("server.port"),
-				cUrl.Short),
+			Original:       cUrl.Original,
+			Short:          fmt.Sprintf("%s/%s", dns, cUrl.Short),
 			ExpirationDate: cUrl.ExpirationDate,
 			DateCreated:    cUrl.DateCreated,
 		}

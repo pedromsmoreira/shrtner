@@ -45,7 +45,7 @@ func newServerStage(t *testing.T) (*serverStage, *serverStage, *serverStage) {
 }
 
 func (s *serverStage) aListRequestIsPrepared() *serverStage {
-	r, err := http.NewRequest("GET", fmt.Sprintf("%s/urls", s.host), nil)
+	r, err := http.NewRequest("GET", fmt.Sprintf("%s/urls?page=1&size=5", s.host), nil)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
 

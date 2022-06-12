@@ -14,24 +14,24 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	cfg := configuration.NewSettings("../configuration/")
+	settings := configuration.NewSettings("../configuration/")
 
-	err := db.CreateSchema(cfg.Database.SkipSchema, cfg.Database.Host, cfg.Database.DbName)
+	err := db.CreateSchema(settings.Database.SkipSchema, settings.Database.Host, settings.Database.DbName)
 
 	if err != nil {
 		log.Fatalf("error creating or updating the schema: %v", err)
 	}
 
-	crDb, err := data.NewCockroachDbRepository(cfg.Database)
+	crDb, err := data.NewCockroachDbRepository(settings.Database)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		os.Exit(1)
 	}
 	defer crDb.Close(context.Background())
 
-	router := NewRouter(crDb)
+	router := NewRouter(settings.DNS, crDb)
 
-	server := NewServer(cfg, router)
+	server := NewServer(settings, router)
 	go func() {
 		err := server.Start()
 		if err != nil && err != http.ErrServerClosed {

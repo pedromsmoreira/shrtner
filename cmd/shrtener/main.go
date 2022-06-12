@@ -24,7 +24,7 @@ func main() {
 	}
 	defer crDB.Close(context.Background())
 
-	router := http.NewRouter(crDB)
+	router := http.NewRouter(settings.DNS, crDB)
 
 	s := http.NewServer(settings, router)
 

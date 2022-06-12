@@ -13,3 +13,5 @@ database:
 
 auth:
   enabled: false
+
+dns: 'http://localhost:5000'
