@@ -51,8 +51,11 @@ func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*d
 	return url, nil
 }
 
-func (r *CockroachDbRepository) List(ctx context.Context) ([]*domain.Url, error) {
-	rows, err := r.db.Query(ctx, "SELECT short_url, original_url, created_date, expiration_date FROM urls")
+func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*domain.Url, error) {
+	offset := page * size
+
+	query := `SELECT short_url, original_url, created_date, expiration_date FROM urls ORDER BY created_date LIMIT $1 OFFSET $2`
+	rows, err := r.db.Query(ctx, query, size, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +63,6 @@ func (r *CockroachDbRepository) List(ctx context.Context) ([]*domain.Url, error)
 	defer rows.Close()
 
 	urls := make([]*domain.Url, 0)
-	if !rows.Next() {
-		return urls, nil
-	}
-
 	for rows.Next() {
 		var sUrl, origUrl, expirationDate, createdDate string
 
@@ -81,4 +80,29 @@ func (r *CockroachDbRepository) List(ctx context.Context) ([]*domain.Url, error)
 	}
 
 	return urls, nil
+}
+
+func (r *CockroachDbRepository) GetById(ctx context.Context, id string) (*domain.Url, error) {
+	query := `SELECT short_url, original_url, created_date, expiration_date FROM urls WHERE short_url = $1`
+
+	var sUrl, origUrl, expirationDate, createdDate string
+	err := r.db.QueryRow(ctx, query, id).Scan(&sUrl, &origUrl, &createdDate, &expirationDate)
+	switch err {
+	case nil:
+		return &domain.Url{
+			Original:       origUrl,
+			Short:          sUrl,
+			ExpirationDate: expirationDate,
+			DateCreated:    createdDate,
+		}, nil
+	case pgx.ErrNoRows:
+		return nil, NewEntryNotFoundInDbErr(id, err)
+	default:
+		return nil, NewEntryNotFoundInDbErr(id, err)
+	}
+}
+
+func (r *CockroachDbRepository) Delete(ctx context.Context, id string) error {
+	_, err := r.db.Exec(ctx, "DELETE FROM urls WHERE short_url=$1", id)
+	return err
 }

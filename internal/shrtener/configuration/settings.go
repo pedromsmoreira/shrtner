@@ -80,7 +80,7 @@ func getBoolEnvVarOrFile(name string) bool {
 	s := os.Getenv(name)
 	v, err := strconv.ParseBool(s)
 	if err != nil {
-		fmt.Printf(fmt.Sprintf("error parsing variable %s. Error: %v", name, err.Error()))
+		fmt.Printf(fmt.Sprintf("error parsing env variable %s. error: %v. reading from settings.yaml...", name, err.Error()))
 		v = viper.GetBool(name)
 		return v
 	}

@@ -11,7 +11,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"testing"
+	"time"
 )
 
 const applicationJSONContentType string = "application/json"
@@ -38,14 +40,14 @@ func newServerStage(t *testing.T) (*serverStage, *serverStage, *serverStage) {
 	as := &serverStage{
 		t:    t,
 		host: fmt.Sprintf("http://%s:%d", host, port),
-		http: http.DefaultClient,
+		http: &http.Client{},
 	}
 
 	return as, as, as
 }
 
 func (s *serverStage) aListRequestIsPrepared() *serverStage {
-	r, err := http.NewRequest("GET", fmt.Sprintf("%s/urls?page=1&size=5", s.host), nil)
+	r, err := http.NewRequest("GET", fmt.Sprintf("%s/urls?page=0&size=5", s.host), nil)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
 
@@ -89,6 +91,7 @@ func (s *serverStage) shouldBeListWithItems() *serverStage {
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.NotEmpty(s.t, r.Data)
+	require.Equal(s.t, 5, len(r.Data))
 
 	return s
 }
@@ -96,6 +99,16 @@ func (s *serverStage) shouldBeListWithItems() *serverStage {
 func (s *serverStage) aCreateRequestIsPrepared(url string) *serverStage {
 	s.body = &handlers.UrlMetadata{
 		Original: url,
+	}
+
+	return s
+}
+
+func (s *serverStage) aCreateRequestWithExpirationDateIsPrepared(url string, expirationDate time.Time) *serverStage {
+	ed := expirationDate.Format(time.RFC3339Nano)
+	s.body = &handlers.UrlMetadata{
+		Original:       url,
+		ExpirationDate: ed,
 	}
 
 	return s
@@ -136,7 +149,7 @@ func (s *serverStage) responseBodyShouldReturnEmptyUrlError() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
-	r := new(handlers.HttpError)
+	r := new(handlers.BadRequestError)
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
@@ -152,9 +165,9 @@ func (s *serverStage) dbIsEmpty() {
 }
 
 func (s *serverStage) twoRequestsWithSameUrlAreCreated() *serverStage {
-	url := uuid.New().String()
+	u := uuid.New().String()
 	md := &handlers.UrlMetadata{
-		Original: url,
+		Original: u,
 	}
 
 	s.requests = append(s.requests, md)
@@ -201,6 +214,24 @@ func (s *serverStage) aUrlIsShortened(url string) *serverStage {
 	return s
 }
 
+func (s *serverStage) aUrlIsShortenedWithCustomExpirationDate(url string, expirationDate time.Time) *serverStage {
+	s.aCreateRequestWithExpirationDateIsPrepared(url, expirationDate).
+		and().
+		createEndpointIsCalled()
+
+	body, err := ioutil.ReadAll(s.response.Body)
+	require.Nil(s.t, err)
+
+	resp := &handlers.UrlMetadata{}
+	err = json.Unmarshal(body, resp)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, resp)
+
+	s.sUrl = resp.Short
+
+	return s
+}
+
 func (s *serverStage) aRedirectRequestIsCreated() *serverStage {
 
 	r, err := http.NewRequest("GET", s.sUrl, nil)
@@ -212,7 +243,21 @@ func (s *serverStage) aRedirectRequestIsCreated() *serverStage {
 	return s
 }
 
+func (s *serverStage) aRedirectRequestIsCreatedWithCustomShortUrl(url string) *serverStage {
+
+	r, err := http.NewRequest("GET", url, nil)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, r)
+
+	s.request = r
+
+	return s
+}
+
 func (s *serverStage) redirectIsRequested() *serverStage {
+	s.http.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
 	r, err := s.http.Do(s.request)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
@@ -232,7 +277,7 @@ func (s *serverStage) aRedirectRequestIsCreatedWithRandomUrl() *serverStage {
 	return s
 }
 
-func (s *serverStage) aNonShortenedUrlIsRequested() *serverStage {
+func (s *serverStage) anExpiredShortenedUrlIsRequested() *serverStage {
 	r, err := s.http.Do(s.request)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, r)
@@ -246,10 +291,27 @@ func (s *serverStage) shouldHaveNotFoundErrorMessage() *serverStage {
 	body, err := ioutil.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
-	resp := &handlers.HttpError{}
+	resp := &handlers.NotFoundError{}
 	err = json.Unmarshal(body, resp)
 	require.Nil(s.t, err)
 	require.NotNil(s.t, resp)
 
 	return s
+}
+
+func (s *serverStage) deleteUrlFromDb() {
+	u, err := url.Parse(s.sUrl)
+	require.Nil(s.t, err)
+
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/urls%s", s.host, u.Path), nil)
+	require.Nil(s.t, err)
+
+	resp, err := s.http.Do(req)
+	require.Nil(s.t, err)
+	require.NotNil(s.t, resp)
+	require.Equal(s.t, http.StatusNoContent, resp.StatusCode)
+}
+
+func (s *serverStage) waitFor(waitTime time.Duration) {
+	time.Sleep(waitTime)
 }

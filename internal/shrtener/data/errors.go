@@ -35,3 +35,20 @@ func (ec *ErrPerformingOperationInDb) Error() string {
 	err := fmt.Errorf("message: %s error: %w", ec.Message, ec.WrappedError)
 	return err.Error()
 }
+
+type ErrEntryNotFoundInDb struct {
+	Message      string
+	WrappedError error
+}
+
+func NewEntryNotFoundInDbErr(id string, err error) *ErrEntryNotFoundInDb {
+	return &ErrEntryNotFoundInDb{
+		Message:      fmt.Sprintf("id %s not found in database", id),
+		WrappedError: err,
+	}
+}
+
+func (enf *ErrEntryNotFoundInDb) Error() string {
+	err := fmt.Errorf("message: %s error: %w", enf.Message, enf.WrappedError)
+	return err.Error()
+}

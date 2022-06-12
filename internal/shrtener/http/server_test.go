@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestList(t *testing.T) {
@@ -79,25 +80,43 @@ func TestCreate(t *testing.T) {
 }
 
 func TestRedirect(t *testing.T) {
-	t.Run("when shortened google url is requested should return temporary redirect (Status Code 307) ", func(t *testing.T) {
+	t.Run("when shortened google url is requested should return found (Status Code 302) ", func(t *testing.T) {
 		given, when, then := newServerStage(t)
 
 		given.aUrlIsShortened("https://www.google.com").
 			and().
-			aRedirectRequestIsCreated()
+			aRedirectRequestIsCreated().and().
+			waitFor(200 * time.Millisecond)
 
 		when.redirectIsRequested()
 
 		then.
-			responseShouldReturnStatusCode(http.StatusTemporaryRedirect)
+			responseShouldReturnStatusCode(http.StatusFound).and().
+			deleteUrlFromDb()
 	})
 
-	t.Run("when shortened urls does not exist should return 404 Not Found", func(t *testing.T) {
+	t.Run("when shortened urls has expired should return 404 Not Found", func(t *testing.T) {
 		given, when, then := newServerStage(t)
 
-		given.aRedirectRequestIsCreatedWithRandomUrl()
+		expDate := time.Now().UTC().Add(200 * time.Millisecond)
+		given.aUrlIsShortenedWithCustomExpirationDate(fmt.Sprintf("https://www.%s.com", uuid.NewString()), expDate).
+			and().
+			aRedirectRequestIsCreated().and().
+			waitFor(500 * time.Millisecond)
 
-		when.aNonShortenedUrlIsRequested()
+		when.redirectIsRequested()
+
+		then.
+			responseShouldReturnStatusCode(http.StatusNotFound).and().
+			shouldHaveNotFoundErrorMessage()
+	})
+
+	t.Run("when shortened url does not exist should return 404 Not Found", func(t *testing.T) {
+		given, when, then := newServerStage(t)
+
+		given.aRedirectRequestIsCreatedWithCustomShortUrl("http://localhost:5000/" + uuid.NewString())
+
+		when.redirectIsRequested()
 
 		then.
 			responseShouldReturnStatusCode(http.StatusNotFound).and().
