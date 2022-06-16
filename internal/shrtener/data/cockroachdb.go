@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
+
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/jackc/pgx/v4"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"

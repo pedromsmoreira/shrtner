@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 const applicationJSONContentType string = "application/json"

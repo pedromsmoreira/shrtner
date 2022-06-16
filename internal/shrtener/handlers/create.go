@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
-	"net/http"
 )
 
 func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *http.Request) {

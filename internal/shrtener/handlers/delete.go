@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
-	"net/http"
 )
 
 func Delete(repository data.ReadDelete) func(w http.ResponseWriter, r *http.Request) {

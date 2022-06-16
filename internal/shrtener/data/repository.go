@@ -2,10 +2,10 @@ package data
 
 import (
 	"context"
+
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
 )
 
-// TODO: move to functions instead of interfaces
 type Repository interface {
 	List
 	Create

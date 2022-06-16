@@ -2,10 +2,11 @@ package configuration
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/spf13/viper"
 )
 
 type Settings struct {

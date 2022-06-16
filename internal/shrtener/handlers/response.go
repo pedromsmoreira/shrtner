@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 	"net/http"
+
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 )
 
 type UrlMetadata struct {

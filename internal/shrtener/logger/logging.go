@@ -1,10 +1,11 @@
 package logger
 
 import (
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"github.com/sirupsen/logrus"
 	"log"
 	"os"
+
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/sirupsen/logrus"
 )
 
 func ConfigureLogrus(cfg *configuration.Settings) {

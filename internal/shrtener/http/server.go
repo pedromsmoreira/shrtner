@@ -3,10 +3,11 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/mux"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 )
 
 type server struct {

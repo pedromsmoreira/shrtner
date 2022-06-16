@@ -3,14 +3,15 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/pedromsmoreira/shrtener/internal/schema/db"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"log"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/pedromsmoreira/shrtener/internal/schema/db"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 )
 
 func TestMain(m *testing.M) {

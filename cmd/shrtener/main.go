@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/http"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/http"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 )
 
 func main() {

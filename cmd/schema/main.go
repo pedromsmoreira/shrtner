@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/pedromsmoreira/shrtener/internal/schema/db"
 	"os"
 	"strconv"
+
+	"github.com/pedromsmoreira/shrtener/internal/schema/db"
 )
 
 func main() {

@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 )
 
 func Redirect(dns string, repository data.GetById) func(w http.ResponseWriter, r *http.Request) {

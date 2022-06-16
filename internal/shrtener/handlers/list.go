@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"net/http"
 	"strconv"
+
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 )
 
 const (
