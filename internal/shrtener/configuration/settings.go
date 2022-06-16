@@ -3,6 +3,7 @@ package configuration
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 	"strconv"
 )
@@ -12,6 +13,7 @@ type Settings struct {
 	Auth     *Auth
 	Database *Database
 	DNS      string
+	Logging  *Logging
 }
 
 type Server struct {
@@ -31,6 +33,13 @@ type Database struct {
 	DbName     string
 	Enabled    bool
 	SkipSchema bool
+}
+
+type Logging struct {
+	Level   string
+	Format  string
+	Output  string
+	DirPath string
 }
 
 func NewSettings(cfgFolder string) *Settings {
@@ -61,6 +70,12 @@ func NewSettings(cfgFolder string) *Settings {
 			SkipSchema: getBoolEnvVarOrFile("database.skip_schema"),
 		},
 		DNS: getStringEnvVarOrFile("dns"),
+		Logging: &Logging{
+			Level:   getStringEnvVarOrFile("logging.level"),
+			Format:  getStringEnvVarOrFile("logging.format"),
+			Output:  getStringEnvVarOrFile("logging.output"),
+			DirPath: getStringEnvVarOrFile("logging.directory"),
+		},
 	}
 }
 
@@ -69,7 +84,7 @@ func getStringEnvVarOrFile(name string) string {
 	if s == "" {
 		s = viper.GetString(name)
 		if s == "" {
-			panic(fmt.Sprintf("variable %s not set. add variable to environment variables or settings file.", name))
+			panic(fmt.Sprintf("[WARNING] env variable %s does not exist.\n add configuration to environment variables or settings file.", name))
 		}
 	}
 
@@ -80,7 +95,7 @@ func getBoolEnvVarOrFile(name string) bool {
 	s := os.Getenv(name)
 	v, err := strconv.ParseBool(s)
 	if err != nil {
-		fmt.Printf(fmt.Sprintf("error parsing env variable %s. error: %v. reading from settings.yaml...", name, err.Error()))
+		log.Printf(fmt.Sprintf("[WARNING] env variable %s does not exist. \nerror: %v. \nfallback: reading from settings.yaml...", name, err.Error()))
 		v = viper.GetBool(name)
 		return v
 	}

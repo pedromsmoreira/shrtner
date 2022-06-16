@@ -5,22 +5,27 @@ import (
 	"net/http"
 )
 
-type encoder interface {
+type serializer interface {
 	Encode(w http.ResponseWriter, r *http.Request, v interface{}) error
 	ContentType(w http.ResponseWriter, r *http.Request) string
+	Decode(w http.ResponseWriter, r *http.Request, v interface{}) error
 }
 
-type jsonEncoder struct{}
+type jsonSerializer struct{}
 
-var _ encoder = (*jsonEncoder)(nil)
+var _ serializer = (*jsonSerializer)(nil)
 
 // JSON is an Encoder for JSON.
-var JSON encoder = (*jsonEncoder)(nil)
+var JSON serializer = (*jsonSerializer)(nil)
 
-func (j *jsonEncoder) Encode(w http.ResponseWriter, r *http.Request, v interface{}) error {
+func (j *jsonSerializer) Encode(w http.ResponseWriter, r *http.Request, v interface{}) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
-func (j *jsonEncoder) ContentType(w http.ResponseWriter, r *http.Request) string {
+func (j *jsonSerializer) ContentType(w http.ResponseWriter, r *http.Request) string {
 	return "application/json; charset=utf-8"
+}
+
+func (j *jsonSerializer) Decode(w http.ResponseWriter, r *http.Request, v interface{}) error {
+	return json.NewDecoder(r.Body).Decode(v)
 }

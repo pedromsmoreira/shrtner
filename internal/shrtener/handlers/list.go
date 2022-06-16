@@ -19,7 +19,7 @@ type ListResponse struct {
 }
 
 func List(dns string, repository data.List) func(w http.ResponseWriter, r *http.Request) {
-	encoder := JSON
+	serializer := JSON
 	return func(w http.ResponseWriter, r *http.Request) {
 		qPage := defaultPageNumber
 		qSize := defaultPageSize
@@ -32,28 +32,19 @@ func List(dns string, repository data.List) func(w http.ResponseWriter, r *http.
 
 		p, err := strconv.Atoi(qPage)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			if err = encoder.Encode(w, r, NewBadRequestErrorWithoutDetails(fmt.Sprintf("[page] was %v. Must be an integer.", qPage))); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusBadRequest, NewBadRequestErrorWithoutDetails(fmt.Sprintf("[page] was %v. Must be an integer.", qPage)), serializer)
 			return
 		}
 
 		s, err := strconv.Atoi(qSize)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			if err = encoder.Encode(w, r, NewBadRequestErrorWithoutDetails(fmt.Sprintf("[size] was %v. Must be an integer.", qSize))); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusBadRequest, NewBadRequestErrorWithoutDetails(fmt.Sprintf("[size] was %v. Must be an integer.", qSize)), serializer)
 			return
 		}
 
 		dbData, err := repository.List(context.Background(), p, s)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			if err = encoder.Encode(w, r, NewInternalServerError("an error occurred in the server")); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusBadRequest, NewInternalServerError("an error occurred in the server"), serializer)
 			return
 		}
 
@@ -77,9 +68,6 @@ func List(dns string, repository data.List) func(w http.ResponseWriter, r *http.
 			response.Next = fmt.Sprintf("%s/urls?page=%d&size=%d", dns, p+1, s)
 		}
 
-		w.WriteHeader(http.StatusOK)
-		if err = encoder.Encode(w, r, response); err != nil {
-			fmt.Print("error encoding value... move to logger")
-		}
+		respond(w, r, http.StatusOK, &response, serializer)
 	}
 }

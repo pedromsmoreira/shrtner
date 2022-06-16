@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/http"
-	"log"
+	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,10 +15,11 @@ import (
 func main() {
 	cfgFolder := "./internal/shrtener/configuration/"
 	settings := configuration.NewSettings(cfgFolder)
+	logger.ConfigureLogrus(settings)
 
 	crDB, err := data.NewCockroachDbRepository(settings.Database)
 	if err != nil {
-		fmt.Printf("error: %v", err)
+		logger.Error("error initializing db connection", map[string]interface{}{"error": err})
 		os.Exit(1)
 	}
 	defer crDB.Close(context.Background())
@@ -31,21 +31,20 @@ func main() {
 	go func() {
 		err = s.Start()
 		if err != nil {
-			log.Fatal(err)
+			logger.Error("error starting the server", map[string]interface{}{"error": err})
 		}
 	}()
 
-	log.Println("Server is running! Ctrl-C to exit!")
+	logger.Info("Server is running! Ctrl-C to exit!")
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-quit
-	log.Println("Shutting down server...")
+	logger.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err = s.Shutdown(ctx)
-	if err := s.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+	if err = s.Shutdown(ctx); err != nil {
+		logger.Error("Server forced to shutdown: ", map[string]interface{}{"error": err})
 	}
-	log.Println("Server exiting")
+	logger.Info("Server exiting")
 }

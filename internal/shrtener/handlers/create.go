@@ -10,55 +10,38 @@ import (
 )
 
 func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *http.Request) {
-	encoder := JSON
+	serializer := JSON
 	return func(w http.ResponseWriter, r *http.Request) {
-		decoder := json.NewDecoder(r.Body)
 		var body UrlMetadata
-		err := decoder.Decode(&body)
-
+		err := serializer.Decode(w, r, &body)
 		b, _ := json.Marshal(&body)
 
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			if err = encoder.Encode(w, r,
-				NewBadRequestError("could not decode the request body",
-					map[string]interface{}{
-						"request": string(b),
-						"error":   err,
-					})); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusBadRequest, NewBadRequestError("could not decode the request body",
+				map[string]interface{}{
+					"request": string(b),
+					"error":   err,
+				}), serializer)
 			return
 		}
 
 		if body.Original == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			if err = encoder.Encode(w, r,
-				NewBadRequestError("[original] property should not be empty",
-					map[string]interface{}{
-						"request": string(b),
-					})); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusBadRequest, NewBadRequestError("[original] property should not be empty",
+				map[string]interface{}{
+					"request": string(b),
+				}), serializer)
 			return
 		}
 
 		u, err := domain.NewUrl(body.Original, body.ExpirationDate)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			if err = encoder.Encode(w, r, err.Error()); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusInternalServerError, err.Error(), serializer)
 			return
 		}
 
 		cUrl, err := repository.Create(context.Background(), u)
-		// TODO: use custom error
 		if err != nil {
-			w.WriteHeader(http.StatusConflict)
-			if err = encoder.Encode(w, r, NewConflictError(err.Error())); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusConflict, NewConflictError(err.Error()), serializer)
 			return
 		}
 
@@ -68,10 +51,6 @@ func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *h
 			ExpirationDate: cUrl.ExpirationDate,
 			DateCreated:    cUrl.DateCreated,
 		}
-
-		w.WriteHeader(http.StatusCreated)
-		if err = encoder.Encode(w, r, rBody); err != nil {
-			fmt.Print("error encoding value... move to logger")
-		}
+		respond(w, r, http.StatusCreated, &rBody, serializer)
 	}
 }

@@ -15,3 +15,9 @@ auth:
   enabled: false
 
 dns: 'http://localhost:5000'
+
+logging:
+  level: info # levels: info, warning, error, debug
+  format: json
+  output: stdout # output: stdout, file
+  directory: logs

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"net/http"
@@ -17,19 +16,13 @@ func Redirect(dns string, repository data.GetById) func(w http.ResponseWriter, r
 		url, err := repository.GetById(context.Background(), id)
 
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			if err = encoder.Encode(w, r, NewNotFoundError(r.URL.Path)); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusNotFound, NewNotFoundError(r.URL.Path), encoder)
 			return
 		}
 
 		expDate, _ := time.Parse(time.RFC3339Nano, url.ExpirationDate)
 		if expDate.Before(time.Now().UTC()) {
-			w.WriteHeader(http.StatusNotFound)
-			if err = encoder.Encode(w, r, NewExpiredLinkError(id, url.ExpirationDate)); err != nil {
-				fmt.Print("error encoding value... move to logger")
-			}
+			respond(w, r, http.StatusNotFound, NewExpiredLinkError(id, url.ExpirationDate), encoder)
 			return
 		}
 
