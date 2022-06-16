@@ -4,48 +4,61 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
 	"net/http"
 )
 
-func Create(dns string, repository data.Create) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		decoder := json.NewDecoder(c.Request.Body)
+func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *http.Request) {
+	encoder := JSON
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
 		var body UrlMetadata
 		err := decoder.Decode(&body)
 
 		b, _ := json.Marshal(&body)
 
 		if err != nil {
-			c.JSON(http.StatusBadRequest, NewBadRequestError("could not decode the request body",
-				map[string]interface{}{
-					"request": string(b),
-					"error":   err,
-				}))
+			w.WriteHeader(http.StatusBadRequest)
+			if err = encoder.Encode(w, r,
+				NewBadRequestError("could not decode the request body",
+					map[string]interface{}{
+						"request": string(b),
+						"error":   err,
+					})); err != nil {
+				fmt.Print("error encoding value... move to logger")
+			}
 			return
 		}
 
 		if body.Original == "" {
-			c.JSON(http.StatusBadRequest, NewBadRequestError("[original] property should not be empty",
-				map[string]interface{}{
-					"request": render.JSON{Data: body},
-				}))
+			w.WriteHeader(http.StatusBadRequest)
+			if err = encoder.Encode(w, r,
+				NewBadRequestError("[original] property should not be empty",
+					map[string]interface{}{
+						"request": string(b),
+					})); err != nil {
+				fmt.Print("error encoding value... move to logger")
+			}
 			return
 		}
 
 		u, err := domain.NewUrl(body.Original, body.ExpirationDate)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			if err = encoder.Encode(w, r, err.Error()); err != nil {
+				fmt.Print("error encoding value... move to logger")
+			}
 			return
 		}
 
 		cUrl, err := repository.Create(context.Background(), u)
 		// TODO: use custom error
 		if err != nil {
-			c.JSON(http.StatusConflict, NewConflictError(err.Error()))
+			w.WriteHeader(http.StatusConflict)
+			if err = encoder.Encode(w, r, NewConflictError(err.Error())); err != nil {
+				fmt.Print("error encoding value... move to logger")
+			}
 			return
 		}
 
@@ -56,6 +69,9 @@ func Create(dns string, repository data.Create) func(c *gin.Context) {
 			DateCreated:    cUrl.DateCreated,
 		}
 
-		c.JSON(http.StatusCreated, rBody)
+		w.WriteHeader(http.StatusCreated)
+		if err = encoder.Encode(w, r, rBody); err != nil {
+			fmt.Print("error encoding value... move to logger")
+		}
 	}
 }

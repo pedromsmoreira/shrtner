@@ -1,18 +1,28 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"net/http"
 )
 
-func Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+func Ping() func(w http.ResponseWriter, r *http.Request) {
+	encoder := JSON
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		pong := map[string]interface{}{"message": "pong"}
+		if err := encoder.Encode(w, r, pong); err != nil {
+			fmt.Print("error encoding value... move to logger")
+		}
+	}
 }
 
-func Status(c *gin.Context) {
-	// add controls for DB status
-	// status to have: up, unstable, down
-	c.JSON(http.StatusOK, gin.H{"status": "up"})
+func Status() func(w http.ResponseWriter, r *http.Request) {
+	encoder := JSON
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		pong := map[string]interface{}{"status": "up"}
+		if err := encoder.Encode(w, r, pong); err != nil {
+			fmt.Print("error encoding value... move to logger")
+		}
+	}
 }

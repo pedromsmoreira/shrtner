@@ -1,22 +1,22 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
 )
 
-func NewRouter(dns string, repository data.Repository) *gin.Engine {
-	router := gin.Default()
+func NewRouter(dns string, repository data.Repository) *mux.Router {
+	router := mux.NewRouter()
 
 	// TODO(feat): add http metrics middleware - prometheus
 	// TODO(improvement): handle http error cleanly
 	// https://golangexample.com/gin-error-handling-middleware-is-a-middleware-for-the-popular-gin-framework
 
-	router.GET("/urls", handlers.List(dns, repository))
-	router.POST("/urls", handlers.Create(dns, repository))
-	router.DELETE("urls/:id", handlers.Delete(repository))
-	router.GET("/:id", handlers.Redirect(dns, repository))
+	router.HandleFunc("/urls", handlers.List(dns, repository)).Methods("GET")
+	router.HandleFunc("/urls", handlers.Create(dns, repository)).Methods("POST")
+	router.HandleFunc("/urls/{id}", handlers.Delete(repository)).Methods("DELETE")
+	router.HandleFunc("/{id}", handlers.Redirect(dns, repository)).Methods("GET")
 
 	return router
 }

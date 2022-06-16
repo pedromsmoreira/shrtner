@@ -2,30 +2,39 @@ package handlers
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"net/http"
 	"time"
 )
 
-func Redirect(dns string, repository data.GetById) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		id := c.Param("id")
+func Redirect(dns string, repository data.GetById) func(w http.ResponseWriter, r *http.Request) {
+	encoder := JSON
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		id := params["id"]
 		url, err := repository.GetById(context.Background(), id)
 
 		if err != nil {
-			c.JSON(http.StatusNotFound, NewNotFoundError(c.Request.URL.Path))
+			w.WriteHeader(http.StatusNotFound)
+			if err = encoder.Encode(w, r, NewNotFoundError(r.URL.Path)); err != nil {
+				fmt.Print("error encoding value... move to logger")
+			}
 			return
 		}
 
 		expDate, _ := time.Parse(time.RFC3339Nano, url.ExpirationDate)
 		if expDate.Before(time.Now().UTC()) {
-			c.JSON(http.StatusNotFound, NewExpiredLinkError(id, url.ExpirationDate))
+			w.WriteHeader(http.StatusNotFound)
+			if err = encoder.Encode(w, r, NewExpiredLinkError(id, url.ExpirationDate)); err != nil {
+				fmt.Print("error encoding value... move to logger")
+			}
 			return
 		}
 
-		c.Header("Via", dns)
-		c.Redirect(http.StatusFound, url.Original)
+		w.Header().Set("via", dns)
+		http.Redirect(w, r, url.Original, http.StatusFound)
 		return
 	}
 }

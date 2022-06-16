@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
 	"net/http"
 	"sync"
@@ -11,12 +11,12 @@ import (
 
 type server struct {
 	settings *configuration.Settings
-	router   *gin.Engine
+	router   *mux.Router
 	server   *http.Server
 	wg       sync.WaitGroup
 }
 
-func NewServer(settings *configuration.Settings, router *gin.Engine) *server {
+func NewServer(settings *configuration.Settings, router *mux.Router) *server {
 	return &server{
 		settings: settings,
 		router:   router,
@@ -24,11 +24,6 @@ func NewServer(settings *configuration.Settings, router *gin.Engine) *server {
 }
 
 func (s *server) Start() error {
-	err := s.router.SetTrustedProxies(nil)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
 
 	s.server = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", s.settings.Server.Host, s.settings.Server.Port),
