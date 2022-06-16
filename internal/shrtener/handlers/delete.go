@@ -4,9 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/gorilla/mux"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 )
 
 func Delete(repository data.ReadDelete) func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,10 @@ func Delete(repository data.ReadDelete) func(w http.ResponseWriter, r *http.Requ
 
 		err = repository.Delete(context.Background(), id)
 		if err != nil {
-			logger.Info("item not deleted", map[string]interface{}{"id": id, "error": err})
+			logrus.
+				WithField("error", err.Error()).
+				WithField("id", id).
+				Info("item not deleted")
 		}
 
 		respond(w, r, http.StatusNoContent, nil, serializer)

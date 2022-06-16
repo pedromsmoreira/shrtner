@@ -1,9 +1,8 @@
 package handlers
 
 import (
+	"github.com/sirupsen/logrus"
 	"net/http"
-
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
 )
 
 type UrlMetadata struct {
@@ -22,6 +21,6 @@ func respond(w http.ResponseWriter, r *http.Request, status int, data interface{
 	}
 
 	if err := encoder.Encode(w, r, data); err != nil {
-		logger.Warning("error encoding value", map[string]interface{}{"error": err})
+		logrus.WithField("error", err.Error()).Warning("error encoding value")
 	}
 }

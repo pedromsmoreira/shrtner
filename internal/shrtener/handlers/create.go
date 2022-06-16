@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
 )
@@ -42,6 +44,7 @@ func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *h
 
 		cUrl, err := repository.Create(context.Background(), u)
 		if err != nil {
+			logrus.WithField("error", err.Error()).Warning("conflict")
 			respond(w, r, http.StatusConflict, NewConflictError(err.Error()), serializer)
 			return
 		}
