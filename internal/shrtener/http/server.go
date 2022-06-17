@@ -25,7 +25,6 @@ func NewServer(settings *configuration.Settings, router *mux.Router) *server {
 }
 
 func (s *server) Start() error {
-
 	s.server = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", s.settings.Server.Host, s.settings.Server.Port),
 		Handler: s.router,

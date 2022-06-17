@@ -30,8 +30,42 @@ func (lrw *wrappedResponseWriter) WriteHeader(statusCode int) {
 	lrw.responseData.status = statusCode
 }
 
-func LoggedHandler(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+type HttpLogger struct {
+	handler http.HandlerFunc
+}
+
+func NewHTTPLogger(handlerToWrap http.HandlerFunc) *HttpLogger {
+	return &HttpLogger{handler: handlerToWrap}
+}
+
+func (hl *HttpLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	start := time.Now().UTC()
+	uri := r.RequestURI
+	method := r.Method
+
+	rd := &responseData{
+		status: 0,
+		size:   0,
+	}
+	lrw := wrappedResponseWriter{
+		ResponseWriter: w,
+		responseData:   rd,
+	}
+
+	hl.handler.ServeHTTP(&lrw, r)
+
+	d := time.Since(start)
+	logrus.WithFields(logrus.Fields{
+		"uri":      uri,
+		"method":   method,
+		"duration": d,
+		"status":   rd.status,
+		"size":     rd.size,
+	}).Info("request completed")
+}
+
+func LoggedHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now().UTC()
 		uri := r.RequestURI
 		method := r.Method
@@ -45,7 +79,7 @@ func LoggedHandler(h http.HandlerFunc) http.HandlerFunc {
 			responseData:   rd,
 		}
 
-		h(&lrw, r)
+		next.ServeHTTP(&lrw, r)
 
 		d := time.Since(start)
 		logrus.WithFields(logrus.Fields{
@@ -55,5 +89,5 @@ func LoggedHandler(h http.HandlerFunc) http.HandlerFunc {
 			"status":   rd.status,
 			"size":     rd.size,
 		}).Info("request completed")
-	}
+	})
 }
