@@ -14,7 +14,7 @@ type UrlMetadata struct {
 }
 
 func respond(w http.ResponseWriter, r *http.Request, status int, data interface{}, encoder serializer) {
-	w.Header().Get(encoder.ContentType(w, r))
+	w.Header().Set("Content-Type", encoder.ContentType(w, r))
 	w.WriteHeader(status)
 	if data == nil {
 		return

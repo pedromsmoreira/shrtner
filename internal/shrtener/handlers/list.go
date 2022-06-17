@@ -16,7 +16,7 @@ const (
 
 type ListResponse struct {
 	Data []*UrlMetadata `json:"data"`
-	Next string
+	Next string         `json:"next_link,omitempty"`
 }
 
 func List(dns string, repository data.List) func(w http.ResponseWriter, r *http.Request) {

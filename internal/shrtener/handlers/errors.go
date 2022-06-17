@@ -1,8 +1,8 @@
 package handlers
 
 type InternalServerError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 func NewInternalServerError(message string) error {
@@ -13,12 +13,12 @@ func NewInternalServerError(message string) error {
 }
 
 func (ise *InternalServerError) Error() string {
-	return "status_code: " + ise.Code + " message: " + ise.Message
+	return "error_code: " + ise.Code + " message: " + ise.Message
 }
 
 type BadRequestError struct {
-	Code    string      `json:"code"`
-	Message string      `json:"message"`
+	Code    string      `json:"code,omitempty"`
+	Message string      `json:"message,omitempty"`
 	Details interface{} `json:"details,omitempty"`
 }
 
@@ -38,12 +38,12 @@ func NewBadRequestErrorWithoutDetails(message string) error {
 }
 
 func (bde *BadRequestError) Error() string {
-	return "status_code: " + bde.Code + " message: " + bde.Message
+	return "error_code: " + bde.Code + " message: " + bde.Message
 }
 
 type ConflictError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 func NewConflictError(message string) error {
@@ -54,12 +54,12 @@ func NewConflictError(message string) error {
 }
 
 func (ce *ConflictError) Error() string {
-	return "status_code: " + ce.Code + " message: " + ce.Message
+	return "error_code: " + ce.Code + " message: " + ce.Message
 }
 
 type NotFoundError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 func NewNotFoundError(id string) error {
@@ -70,12 +70,12 @@ func NewNotFoundError(id string) error {
 }
 
 func (nfe *NotFoundError) Error() string {
-	return "status_code: " + nfe.Code + " message: " + nfe.Message
+	return "error_code: " + nfe.Code + " message: " + nfe.Message
 }
 
 type ExpiredLinkError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 func NewExpiredLinkError(id string, expirationDate string) error {
@@ -86,5 +86,5 @@ func NewExpiredLinkError(id string, expirationDate string) error {
 }
 
 func (ele *ExpiredLinkError) Error() string {
-	return "status_code: " + ele.Code + " message: " + ele.Message
+	return "error_code: " + ele.Code + " message: " + ele.Message
 }

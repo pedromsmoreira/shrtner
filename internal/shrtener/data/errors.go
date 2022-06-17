@@ -19,36 +19,38 @@ func (ec *ErrConnectingToDb) Error() string {
 	return err.Error()
 }
 
+const duplicateKeyCode = "23505"
+
 type ErrPerformingOperationInDb struct {
-	Message      string
-	WrappedError error
+	Message string
 }
 
-func NewErrPerformingOperationInDb(msg string, err error) *ErrPerformingOperationInDb {
+func NewErrPerformingOperationInDb(code string, msg string) *ErrPerformingOperationInDb {
+	if code == duplicateKeyCode {
+		msg = "key already exists"
+	}
+
 	return &ErrPerformingOperationInDb{
-		Message:      msg,
-		WrappedError: err,
+		Message: msg,
 	}
 }
 
 func (ec *ErrPerformingOperationInDb) Error() string {
-	err := fmt.Errorf("message: %s error: %w", ec.Message, ec.WrappedError)
-	return err.Error()
+	return ec.Message
 }
 
 type ErrEntryNotFoundInDb struct {
-	Message      string
-	WrappedError error
+	Message string
+	Detail  string
 }
 
-func NewEntryNotFoundInDbErr(id string, err error) *ErrEntryNotFoundInDb {
+func NewEntryNotFoundInDbErr(id string, detail string) *ErrEntryNotFoundInDb {
 	return &ErrEntryNotFoundInDb{
-		Message:      fmt.Sprintf("id %s not found in database", id),
-		WrappedError: err,
+		Message: fmt.Sprintf("id %s not found in database", id),
+		Detail:  detail,
 	}
 }
 
 func (enf *ErrEntryNotFoundInDb) Error() string {
-	err := fmt.Errorf("message: %s error: %w", enf.Message, enf.WrappedError)
-	return err.Error()
+	return fmt.Sprintf("message: %s details: %s", enf.Message, enf.Detail)
 }

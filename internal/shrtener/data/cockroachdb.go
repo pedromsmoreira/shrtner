@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/jackc/pgconn"
+
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/jackc/pgx/v4"
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
@@ -39,14 +43,18 @@ func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*d
 		_, err := tx.Exec(ctx,
 			"INSERT INTO urls(short_url, original_url, created_date, expiration_date) VALUES ($1, $2, $3, $4)",
 			url.Short, url.Original, url.DateCreated, url.ExpirationDate)
-
 		return err
 	})
 
-	// TODO: Apply check according to db error
-	if err != nil {
-		// TODO: add custom error
-		return nil, NewErrPerformingOperationInDb("error creating data in db", err)
+	if pgErr, ok := err.(*pgconn.PgError); ok {
+		logrus.WithFields(logrus.Fields{
+			"detail":     pgErr.Detail,
+			"message":    pgErr.Message,
+			"code":       pgErr.Code,
+			"constraint": pgErr.ConstraintName,
+			"schema":     pgErr.SchemaName,
+		}).Warning("write database operation")
+		return nil, NewErrPerformingOperationInDb(pgErr.Code, pgErr.Message)
 	}
 
 	return url, nil
@@ -57,8 +65,15 @@ func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*do
 
 	query := `SELECT short_url, original_url, created_date, expiration_date FROM urls ORDER BY created_date LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(ctx, query, size, offset)
-	if err != nil {
-		return nil, err
+	if pgErr, ok := err.(*pgconn.PgError); ok {
+		logrus.WithFields(logrus.Fields{
+			"detail":     pgErr.Detail,
+			"message":    pgErr.Message,
+			"code":       pgErr.Code,
+			"constraint": pgErr.ConstraintName,
+			"schema":     pgErr.SchemaName,
+		}).Warning("read database operation")
+		return nil, NewErrPerformingOperationInDb(pgErr.Code, pgErr.Message)
 	}
 
 	defer rows.Close()
@@ -67,9 +82,16 @@ func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*do
 	for rows.Next() {
 		var sUrl, origUrl, expirationDate, createdDate string
 
-		err := rows.Scan(&sUrl, &origUrl, &createdDate, &expirationDate)
-		if err != nil {
-			return nil, NewErrPerformingOperationInDb("error reading data from db", err)
+		err = rows.Scan(&sUrl, &origUrl, &createdDate, &expirationDate)
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			logrus.WithFields(logrus.Fields{
+				"detail":     pgErr.Detail,
+				"message":    pgErr.Message,
+				"code":       pgErr.Code,
+				"constraint": pgErr.ConstraintName,
+				"schema":     pgErr.SchemaName,
+			}).Warning("read database operation")
+			return nil, NewErrPerformingOperationInDb(pgErr.Code, pgErr.Message)
 		}
 
 		urls = append(urls, &domain.Url{
@@ -97,13 +119,23 @@ func (r *CockroachDbRepository) GetById(ctx context.Context, id string) (*domain
 			DateCreated:    createdDate,
 		}, nil
 	case pgx.ErrNoRows:
-		return nil, NewEntryNotFoundInDbErr(id, err)
+		return nil, NewEntryNotFoundInDbErr(id, err.Error())
 	default:
-		return nil, NewEntryNotFoundInDbErr(id, err)
+		return nil, NewEntryNotFoundInDbErr(id, "unexpected error")
 	}
 }
 
 func (r *CockroachDbRepository) Delete(ctx context.Context, id string) error {
 	_, err := r.db.Exec(ctx, "DELETE FROM urls WHERE short_url=$1", id)
+	if pgErr, ok := err.(*pgconn.PgError); ok {
+		logrus.WithFields(logrus.Fields{
+			"detail":     pgErr.Detail,
+			"message":    pgErr.Message,
+			"code":       pgErr.Code,
+			"constraint": pgErr.ConstraintName,
+			"schema":     pgErr.SchemaName,
+		}).Warning("delete database operation")
+		return NewErrPerformingOperationInDb(pgErr.Code, pgErr.Message)
+	}
 	return err
 }
