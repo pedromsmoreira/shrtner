@@ -139,3 +139,21 @@ func (r *CockroachDbRepository) Delete(ctx context.Context, id string) error {
 	}
 	return err
 }
+
+func (r *CockroachDbRepository) GetRedirect(ctx context.Context, id string) (*domain.Redirect, error) {
+	query := `SELECT original_url, expiration_date FROM urls WHERE short_url = $1`
+
+	var origUrl, expirationDate string
+	err := r.db.QueryRow(ctx, query, id).Scan(&origUrl, &expirationDate)
+	switch err {
+	case nil:
+		return &domain.Redirect{
+			Original:       origUrl,
+			ExpirationDate: expirationDate,
+		}, nil
+	case pgx.ErrNoRows:
+		return nil, NewEntryNotFoundInDbErr(id, err.Error())
+	default:
+		return nil, NewEntryNotFoundInDbErr(id, "unexpected error")
+	}
+}

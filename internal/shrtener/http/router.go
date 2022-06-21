@@ -7,7 +7,7 @@ import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers/middleware"
 )
 
-func NewRouter(dns string, repository data.Repository) *mux.Router {
+func NewRouter(dns string, repository data.ReadWriteRepository) *mux.Router {
 	router := mux.NewRouter()
 
 	router.Use(middleware.LoggedHandler)

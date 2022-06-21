@@ -9,26 +9,26 @@ import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
 )
 
-func Redirect(dns string, repository data.GetById) func(w http.ResponseWriter, r *http.Request) {
+func Redirect(dns string, repository data.ReadKeyRepository) func(w http.ResponseWriter, r *http.Request) {
 	encoder := JSON
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 		id := params["id"]
-		url, err := repository.GetById(context.Background(), id)
+		redirect, err := repository.GetRedirect(context.Background(), id)
 
 		if err != nil {
 			respond(w, r, http.StatusNotFound, NewNotFoundError(r.URL.Path), encoder)
 			return
 		}
 
-		expDate, _ := time.Parse(time.RFC3339Nano, url.ExpirationDate)
+		expDate, _ := time.Parse(time.RFC3339Nano, redirect.ExpirationDate)
 		if expDate.Before(time.Now().UTC()) {
-			respond(w, r, http.StatusNotFound, NewExpiredLinkError(id, url.ExpirationDate), encoder)
+			respond(w, r, http.StatusNotFound, NewExpiredLinkError(id, redirect.ExpirationDate), encoder)
 			return
 		}
 
 		w.Header().Set("via", dns)
-		http.Redirect(w, r, url.Original, http.StatusFound)
+		http.Redirect(w, r, redirect.Original, http.StatusFound)
 		return
 	}
 }

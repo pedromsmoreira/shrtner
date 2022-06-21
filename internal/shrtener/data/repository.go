@@ -6,16 +6,25 @@ import (
 	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
 )
 
-type Repository interface {
-	List
+type ReadKeyRepository interface {
+	GetRedirect
+}
+
+type ReadWriteRepository interface {
 	Create
+	ReadDelete
+	ReadRepository
+	ReadKeyRepository
+}
+
+type ReadRepository interface {
+	List
 	GetById
-	Delete
 }
 
 type ReadDelete interface {
+	ReadRepository
 	Delete
-	GetById
 }
 
 type List interface {
@@ -32,4 +41,8 @@ type GetById interface {
 
 type Delete interface {
 	Delete(ctx context.Context, id string) error
+}
+
+type GetRedirect interface {
+	GetRedirect(ctx context.Context, id string) (*domain.Redirect, error)
 }
