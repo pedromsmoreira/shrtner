@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/configuration"
 	"github.com/sirupsen/logrus"
 )
 

@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/configuration"
 )
 
 type server struct {

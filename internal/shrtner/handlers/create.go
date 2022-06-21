@@ -8,8 +8,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain"
 )
 
 func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *http.Request) {

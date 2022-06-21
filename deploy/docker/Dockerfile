@@ -12,7 +12,7 @@ ENV GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
 RUN go test -v ./...
 
-RUN go build -ldflags="-w -s" -o build/shrtener ./cmd/shrtener/main.go
+RUN go build -ldflags="-w -s" -o build/shrtner ./cmd/shrtner/main.go
 
 FROM scratch as shrtener
 

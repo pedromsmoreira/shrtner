@@ -10,8 +10,8 @@ import (
 
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/jackc/pgx/v4"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain"
 )
 
 type CockroachDbRepository struct {

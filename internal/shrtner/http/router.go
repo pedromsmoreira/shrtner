@@ -2,9 +2,9 @@ package http
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers/middleware"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/handlers"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/handlers/middleware"
 )
 
 func NewRouter(dns string, repository data.ReadWriteRepository) *mux.Router {

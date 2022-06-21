@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
 )
 
 func Redirect(dns string, repository data.ReadKeyRepository) func(w http.ResponseWriter, r *http.Request) {

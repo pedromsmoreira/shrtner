@@ -3,7 +3,7 @@ package data
 import (
 	"context"
 
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/domain"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain"
 )
 
 type ReadKeyRepository interface {

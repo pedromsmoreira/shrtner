@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
 )
 
 const (

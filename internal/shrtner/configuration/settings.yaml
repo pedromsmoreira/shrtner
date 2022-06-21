@@ -5,7 +5,7 @@ server:
 
 database:
   host: 'localhost:26257'
-  db_name: shrtener
+  db_name: shrtner
   username: root
   password: admin
   auth_enabled: false

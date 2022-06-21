@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/handlers"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/handlers"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -92,7 +92,8 @@ func (s *serverStage) shouldBeListWithItems() *serverStage {
 	err = json.Unmarshal(body, r)
 	require.Nil(s.t, err)
 	require.NotEmpty(s.t, r.Data)
-	require.Equal(s.t, 5, len(r.Data))
+	require.Greater(s.t, 0, len(r.Data))
+	require.LessOrEqual(s.t, 5, len(r.Data))
 
 	return s
 }

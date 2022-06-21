@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/pedromsmoreira/shrtener/internal/schema/db"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
 )
 
 func TestMain(m *testing.M) {

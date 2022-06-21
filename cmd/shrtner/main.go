@@ -9,14 +9,14 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/configuration"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/http"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/logger"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/configuration"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/http"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/logger"
 )
 
 func main() {
-	cfgFolder := "./internal/shrtener/configuration/"
+	cfgFolder := "./internal/shrtner/configuration/"
 	settings := configuration.NewSettings(cfgFolder)
 	log := logrus.StandardLogger()
 	log.SetLevel(logger.WithLogLevel(settings.Logging))

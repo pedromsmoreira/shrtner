@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/mux"
-	"github.com/pedromsmoreira/shrtener/internal/shrtener/data"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
 )
 
 func Delete(repository data.ReadDelete) func(w http.ResponseWriter, r *http.Request) {

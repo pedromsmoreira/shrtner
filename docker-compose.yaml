@@ -5,12 +5,12 @@ services:
    build:
      context: .
      dockerfile: deploy/docker/Dockerfile
-     target: shrtener
+     target: shrtner
    ports:
      - "8000:8000"
    environment:
      - 'DB_HOST=cockroachdb:26257'
-     - 'DB_NAME=shrtener'
+     - 'DB_NAME=shrtner'
      - 'PORT=8000'
 
   schema:
@@ -22,7 +22,7 @@ services:
     environment:
       - 'SKIP_SCHEMA=false'
       - 'DB_HOST=cockroachdb:26257'
-      - 'DB_NAME=shrtener'
+      - 'DB_NAME=shrtner'
 
   cockroachdb:
     image: cockroachdb/cockroach:v21.2.7
