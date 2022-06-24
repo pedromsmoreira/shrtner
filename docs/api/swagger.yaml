@@ -1,0 +1,153 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Link Shortener API
+  description: A simple API to manage and shorten links
+
+paths:
+  /urls:
+    get:
+      description: Returns a list of shortened links
+      parameters:
+        - name: size
+          in: query
+          description: Limits the number of items on a page
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Specifies the page number of the artists to be displayed
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListResponse'
+
+        '400':
+          description: Request has an error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      description: Returns the created shortened link with metadata
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlMetadata'
+        '400':
+          description: Request has an error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Create item that already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Unexpected error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /urls/{id}:
+    delete:
+      description: Request to delete shortened url with provided 'id'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '404':
+          description: Url to delete does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{id}:
+    get:
+      responses:
+        '302':
+          description: Url found, will proceed to redirect to original url
+          headers:
+            via:
+              description: shows the origin of the redirect
+              schema:
+                type: string
+        '404':
+          description: Url with 'id' not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+# Apply the security globally to all 'operations'
+# security:
+#   - bearerAuth: [] # list of security scopes
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UrlMetadata:
+      type: object
+      properties:
+        original:
+          type: string
+          description: original url requested to be shortened
+          format: url
+        short:
+          type: string
+          description: result of the shortened url
+          format: url
+        expiration_date:
+          type: string
+          description: shortened url expiration date
+          format: date
+        date_created:
+          type: string
+          description: request creation date
+          format: date
+    ListResponse:
+      properties:
+        data:
+          $ref: '#/components/schemas/UrlMetadata'
+        next_link:
+          type: string
+          format: url
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: error code
+        message:
+          type: string
+          description: error message with small explanation
+        details:
+          type: object
+          format: arbitrary format, may contains different types with extra metadata
+
+
