@@ -29,21 +29,14 @@ type Url struct {
 }
 
 func NewUrl(original string, expirationDate string) (*Url, error) {
-	// TODO: Add UTC check how
 	createdDate := time.Now().UTC()
 
-	var expDate time.Time
-	if expirationDate == "" {
-		expDate = createdDate.Add(defaultUrlActiveTimeInHours)
-	} else {
-		d, err := time.Parse(time.RFC3339Nano, expirationDate)
-		if err != nil {
-			return nil, ErrConvertingExpirationDateToRFC3339
-		}
-		expDate = d
+	expDate, err := calculateExpirationDate(createdDate, expirationDate)
+	if err != nil {
+		return nil, err
 	}
 
-	_, err := time.Parse(time.RFC3339Nano, createdDate.Format(time.RFC3339Nano))
+	_, err = time.Parse(time.RFC3339Nano, createdDate.Format(time.RFC3339Nano))
 	if err != nil {
 		return nil, ErrConvertingCreatedDateToRFC3339
 	}
@@ -73,4 +66,17 @@ func decimalToBase62(strDecimal int64) string {
 	}
 
 	return encoded
+}
+
+func calculateExpirationDate(createdDate time.Time, expirationDate string) (time.Time, error) {
+
+	if expirationDate == "" {
+		return createdDate.Add(defaultUrlActiveTimeInHours)
+	}
+
+	expDate, err := time.Parse(time.RFC3339Nano, expirationDate)
+	if err != nil {
+		return nil, ErrConvertingExpirationDateToRFC3339
+	}
+	return expDate
 }
