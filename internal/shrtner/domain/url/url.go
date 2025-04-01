@@ -1,4 +1,4 @@
-package domain
+package url
 
 import (
 	"crypto/sha256"
@@ -28,37 +28,30 @@ type Url struct {
 	DateCreated    string
 }
 
-func NewUrl(original string, expirationDate string) (*Url, error) {
-	// TODO: Add UTC check how
+func New(original string, expirationDate string) (*Url, error) {
 	createdDate := time.Now().UTC()
 
-	var expDate time.Time
-	if expirationDate == "" {
-		expDate = createdDate.Add(defaultUrlActiveTimeInHours)
-	} else {
-		d, err := time.Parse(time.RFC3339Nano, expirationDate)
-		if err != nil {
-			return nil, ErrConvertingExpirationDateToRFC3339
-		}
-		expDate = d
+	expDate, err := calculateExpirationDate(createdDate, expirationDate)
+	if err != nil {
+		return nil, err
 	}
 
-	_, err := time.Parse(time.RFC3339Nano, createdDate.Format(time.RFC3339Nano))
+	_, err = time.Parse(time.RFC3339Nano, createdDate.Format(time.RFC3339Nano))
 	if err != nil {
 		return nil, ErrConvertingCreatedDateToRFC3339
 	}
 
 	return &Url{
 		Original:       original,
-		Short:          Shorten(original),
+		Short:          shorten(original),
 		DateCreated:    createdDate.Format(time.RFC3339Nano),
 		ExpirationDate: expDate.Format(time.RFC3339Nano),
 	}, nil
 }
 
-func Shorten(origUrl string) string {
+func shorten(origUrl string) string {
 	hash := sha256.Sum256([]byte(origUrl))
-	hexStr := hex.EncodeToString([]byte(fmt.Sprintf("%s", hash[:5])))
+	hexStr := hex.EncodeToString(hash[:5])
 	num, _ := strconv.ParseInt(hexStr, 16, 64)
 	encoded := decimalToBase62(num)
 	return encoded
@@ -73,4 +66,17 @@ func decimalToBase62(strDecimal int64) string {
 	}
 
 	return encoded
+}
+
+func calculateExpirationDate(createdDate time.Time, expirationDate string) (time.Time, error) {
+
+	if expirationDate == "" {
+		return createdDate.Add(defaultUrlActiveTimeInHours), nil
+	}
+
+	expDate, err := time.Parse(time.RFC3339Nano, expirationDate)
+	if err != nil {
+		return time.Now().UTC(), ErrConvertingExpirationDateToRFC3339
+	}
+	return expDate, nil
 }

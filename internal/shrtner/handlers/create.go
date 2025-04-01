@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/pedromsmoreira/shrtener/internal/shrtner/data"
-	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain/url"
 )
 
 func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func Create(dns string, repository data.Create) func(w http.ResponseWriter, r *h
 			return
 		}
 
-		u, err := domain.NewUrl(body.Original, body.ExpirationDate)
+		u, err := url.New(body.Original, body.ExpirationDate)
 		if err != nil {
 			respond(w, r, http.StatusInternalServerError, err.Error(), serializer)
 			return

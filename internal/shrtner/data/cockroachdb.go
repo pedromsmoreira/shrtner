@@ -11,7 +11,7 @@ import (
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/jackc/pgx/v4"
 	"github.com/pedromsmoreira/shrtener/internal/shrtner/configuration"
-	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain/url"
 )
 
 type CockroachDbRepository struct {
@@ -38,7 +38,7 @@ func (r *CockroachDbRepository) Close(ctx context.Context) {
 	}
 }
 
-func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*domain.Url, error) {
+func (r *CockroachDbRepository) Create(ctx context.Context, url *url.Url) (*url.Url, error) {
 	err := crdbpgx.ExecuteTx(ctx, r.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx,
 			"INSERT INTO urls(short_url, original_url, created_date, expiration_date) VALUES ($1, $2, $3, $4)",
@@ -60,7 +60,7 @@ func (r *CockroachDbRepository) Create(ctx context.Context, url *domain.Url) (*d
 	return url, nil
 }
 
-func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*domain.Url, error) {
+func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*url.Url, error) {
 	offset := page * size
 
 	query := `SELECT short_url, original_url, created_date, expiration_date FROM urls ORDER BY created_date LIMIT $1 OFFSET $2`
@@ -78,7 +78,7 @@ func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*do
 
 	defer rows.Close()
 
-	urls := make([]*domain.Url, 0)
+	urls := make([]*url.Url, 0)
 	for rows.Next() {
 		var sUrl, origUrl, expirationDate, createdDate string
 
@@ -94,7 +94,7 @@ func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*do
 			return nil, NewErrPerformingOperationInDb(pgErr.Code, pgErr.Message)
 		}
 
-		urls = append(urls, &domain.Url{
+		urls = append(urls, &url.Url{
 			Original:       origUrl,
 			Short:          sUrl,
 			ExpirationDate: expirationDate,
@@ -105,14 +105,14 @@ func (r *CockroachDbRepository) List(ctx context.Context, page, size int) ([]*do
 	return urls, nil
 }
 
-func (r *CockroachDbRepository) GetById(ctx context.Context, id string) (*domain.Url, error) {
+func (r *CockroachDbRepository) GetById(ctx context.Context, id string) (*url.Url, error) {
 	query := `SELECT short_url, original_url, created_date, expiration_date FROM urls WHERE short_url = $1`
 
 	var sUrl, origUrl, expirationDate, createdDate string
 	err := r.db.QueryRow(ctx, query, id).Scan(&sUrl, &origUrl, &createdDate, &expirationDate)
 	switch err {
 	case nil:
-		return &domain.Url{
+		return &url.Url{
 			Original:       origUrl,
 			Short:          sUrl,
 			ExpirationDate: expirationDate,
@@ -140,14 +140,14 @@ func (r *CockroachDbRepository) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (r *CockroachDbRepository) GetRedirect(ctx context.Context, id string) (*domain.Redirect, error) {
+func (r *CockroachDbRepository) GetRedirect(ctx context.Context, id string) (*url.Redirect, error) {
 	query := `SELECT original_url, expiration_date FROM urls WHERE short_url = $1`
 
 	var origUrl, expirationDate string
 	err := r.db.QueryRow(ctx, query, id).Scan(&origUrl, &expirationDate)
 	switch err {
 	case nil:
-		return &domain.Redirect{
+		return &url.Redirect{
 			Original:       origUrl,
 			ExpirationDate: expirationDate,
 		}, nil
