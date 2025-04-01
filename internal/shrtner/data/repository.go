@@ -3,7 +3,7 @@ package data
 import (
 	"context"
 
-	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain"
+	"github.com/pedromsmoreira/shrtener/internal/shrtner/domain/url"
 )
 
 type ReadKeyRepository interface {
@@ -28,15 +28,15 @@ type ReadDelete interface {
 }
 
 type List interface {
-	List(ctx context.Context, page, pageSize int) ([]*domain.Url, error)
+	List(ctx context.Context, page, pageSize int) ([]*url.Url, error)
 }
 
 type Create interface {
-	Create(ctx context.Context, url *domain.Url) (*domain.Url, error)
+	Create(ctx context.Context, url *url.Url) (*url.Url, error)
 }
 
 type GetById interface {
-	GetById(ctx context.Context, id string) (*domain.Url, error)
+	GetById(ctx context.Context, id string) (*url.Url, error)
 }
 
 type Delete interface {
@@ -44,5 +44,5 @@ type Delete interface {
 }
 
 type GetRedirect interface {
-	GetRedirect(ctx context.Context, id string) (*domain.Redirect, error)
+	GetRedirect(ctx context.Context, id string) (*url.Redirect, error)
 }

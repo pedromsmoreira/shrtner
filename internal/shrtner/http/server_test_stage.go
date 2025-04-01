@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"testing"
@@ -73,7 +73,7 @@ func (s *serverStage) responseShouldReturnStatusCode(statusCode int) *serverStag
 }
 
 func (s *serverStage) shouldBeEmptyList() *serverStage {
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	r := new(handlers.ListResponse)
@@ -85,7 +85,7 @@ func (s *serverStage) shouldBeEmptyList() *serverStage {
 }
 
 func (s *serverStage) shouldBeListWithItems() *serverStage {
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	r := new(handlers.ListResponse)
@@ -130,7 +130,7 @@ func (s *serverStage) createEndpointIsCalled() *serverStage {
 }
 
 func (s *serverStage) responseBodyShouldNotBeEmpty() *serverStage {
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	r := new(handlers.UrlMetadata)
@@ -148,7 +148,7 @@ func (s *serverStage) responseBodyShouldNotBeEmpty() *serverStage {
 }
 
 func (s *serverStage) responseBodyShouldReturnEmptyUrlError() *serverStage {
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	r := new(handlers.BadRequestError)
@@ -203,7 +203,7 @@ func (s *serverStage) aUrlIsShortened(url string) *serverStage {
 		and().
 		createEndpointIsCalled()
 
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	resp := &handlers.UrlMetadata{}
@@ -221,7 +221,7 @@ func (s *serverStage) aUrlIsShortenedWithCustomExpirationDate(url string, expira
 		and().
 		createEndpointIsCalled()
 
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	resp := &handlers.UrlMetadata{}
@@ -290,7 +290,7 @@ func (s *serverStage) anExpiredShortenedUrlIsRequested() *serverStage {
 }
 
 func (s *serverStage) shouldHaveNotFoundErrorMessage() *serverStage {
-	body, err := ioutil.ReadAll(s.response.Body)
+	body, err := io.ReadAll(s.response.Body)
 	require.Nil(s.t, err)
 
 	resp := &handlers.NotFoundError{}
